@@ -8,20 +8,30 @@
 #define PHOTOFORMATS_HPP
 
 #include <map>
+#include <vector>
 #include <stdexcept> //out_of_range exception
+
+#include <cstring>
 
 #include "Photo.hpp"
 
 class PhotoFormats {
 private:
-  std::map<char*/*extension*/,Photo/*format*/> _formats;
 
+  /* The integer is a index on the extension list */
+  std::map<int/*extension*/,Photo/*format*/> _formats;
+
+  /* The extension list */
+  std::vector<char*> _extensions;
+  
 public:
-void RegisterFormat(char* extension, Photo* format);
-void UnregisterFormat(char* extension);
+  PhotoFormats();
+  
+  void RegisterFormat(char* extension, Photo* format);
+  void UnregisterFormat(char* extension);
 
-/* Get a format. Return NULL if it does not exist */
-Photo* GetFormat(char* extension);
+  /* Get a format. Return NULL if it does not exist */
+  Photo* GetFormat(char* extension);
 
   
 };

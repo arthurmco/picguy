@@ -9,6 +9,8 @@
 
 #include "PhotoFormats.hpp"
 
+#include "JPEGPhoto.hpp"
+
 int main(int argc, char* argv[]){
   if (argc < 2){
     printf("Test the PhotoFormats class with a file\n");
@@ -17,6 +19,7 @@ int main(int argc, char* argv[]){
   }
 
   PhotoFormats f;
+  f.RegisterFormat(".jpg", new JPEGPhoto);
   char* file = argv[1];
   char* extension = strrchr(file, '.');
 

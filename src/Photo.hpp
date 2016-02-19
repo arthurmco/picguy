@@ -12,7 +12,7 @@
 #include "Pixel.hpp"
 
 class Photo {
-private:
+protected:
   Pixel* _data;
   std::string _name;
 
@@ -24,7 +24,7 @@ public:
   const char* GetName();
   void SetName(const char*);
 
-  char* GetFileExtension() const;
+  const char* GetFileExtension();
 
   int GetWidth(){return 0;}
   int GetHeight(){return 0;}
