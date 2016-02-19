@@ -1,0 +1,67 @@
+PICGUY
+=======================
+
+* What is it?
+	PicGuy is a photo administration software, like Shotwell and Picasa.
+
+* What it does?
+	It allows you to split the photos you have in groups, tag them, and (possibly) send them
+	to Internet, by email or to sites like Flickr, G+ and Facebook.
+	Supports JPEG, GIF, PNG, BMP and possibly TIFF and RAW images.
+
+	I didn't decide if it will use GTK or Qt. Probably GTK.
+
+* Structures
+	[Pixel] - represents a pixel. Contain the values R,G,B and A. (the 4 channels),
+		 in this order.
+
+
+* Class organization
+	[Photo (abstract) ] - represents a random photo
+		Methods: bool Open()
+				Opens a photo, return 'true' on success, 'false' on failure.
+			 const char* GetName() / void SetName(const char*)
+			 const char* GetExtension()
+			 int GetWidth()
+			 int GetHeight()
+			 int GetBitDepth() 
+			 struct Pixel* GetRawData() 
+				Get the pixels from the image.
+
+	[JPEGPhoto (inherits from Photo) - represents JPEG images
+	[GIFPhoto (inherits from Photo) - represents GIF images
+	[PNGPhoto (inherits from Photo) - represents PNG images
+	[BMPPhoto (inherits from Photo) - represents BMP images
+
+	[PhotoGroup] - represents a photo group
+		Methods:	
+			int AddPhoto(Photo*)
+				Adds a photo, returns ID number
+			void RemovePhoto(int)
+				Removes a photo by its ID number
+			int GetPhotoCount()
+				char* GetName() const / void SetName(const char*)
+
+			static int GetFromDirectory()
+				Creates a photo group from a directory listing.
+				Returns photo count from the directory.
+				The photo group is the directory name
+
+	[PhotoFormats] - manages file formats
+		Methods:
+			void RegisterFormat(char* extension, Photo* photo)
+				Register a photo format
+
+			void UnregisterFormat(char* extension)
+				Unregister a photo format.
+
+			void GetFormat(char* extension)
+				Get a copy of the file format based on the extension.
+				You can call SetName() to set the name and Open() to open the file.
+
+* Library dependencies
+	libjpeg	 (for JPEG support)
+	libbmp	 (for BMP support)
+	libpng	 (for PNG support)
+	libgif (does this exist?) (for GIF support)
+

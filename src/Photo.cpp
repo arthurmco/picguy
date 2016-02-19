@@ -1,0 +1,13 @@
+#include "Photo.hpp"
+
+const char* Photo::GetName() {
+  return _name.c_str();
+
+}
+void Photo::SetName(const char* name){
+  _name = std::string(name);
+}
+
+Pixel* Photo::GetRawData(){
+  return _data;
+}
