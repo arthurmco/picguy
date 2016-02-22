@@ -16,9 +16,11 @@ class Photo {
 protected:
   Pixel* _data;
   std::string _name;
+  int _id;
 
+  
 public:
-  Photo(){}
+  Photo();
 
   virtual Photo* Clone(){return new Photo;}
   
@@ -27,14 +29,16 @@ public:
   virtual bool Open() {return false; }
 
   const char* GetName();
-  void SetName(const char*);
-
+  void SetName(const char*);  
+  
   const char* GetFileExtension();
 
   virtual int GetWidth(){return 0;}
   virtual int GetHeight(){return 0;}
   virtual int GetBitDepth(){return 0;}
 
+  int GetID();
+  
   Pixel* GetRawData();
   
 };

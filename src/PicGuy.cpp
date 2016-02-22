@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include "PhotoFormats.hpp"
+#include "PhotoGroup.hpp"
 
 #include "JPEGPhoto.hpp"
 #include "PNGPhoto.hpp"
@@ -26,27 +27,40 @@ int main(int argc, char* argv[]){
   f.RegisterFormat(".jpeg", new JPEGPhoto());
   f.RegisterFormat(".png", new PNGPhoto());
   
-  char* file = argv[1];
-  char* extension = strrchr(file, '.');
+  /* Test the PhotoGroup class */
+  PhotoGroup photogrp;
+  for (int i = 1; i < argc; i++){
 
-  //No extension
-  if (!extension)
-    extension = "\0";
-  
-  Photo* format = f.GetFormat(extension);
-  
-  if (format){
-    printf("Format found.\n");
-    format->SetName(file);
-    if (format->Open()){
+      char* file = argv[i];
+      char* extension = strrchr(file, '.');
 
-      printf("Dimensions: %dx%d, %d bits\n",
-	     format->GetWidth(), format->GetHeight(),
-	     format->GetBitDepth());
-    }
-  } else {
-    printf("Format not found\n");
+      printf("\n File: %s\n", file);
+      
+      //No extension
+      if (!extension)
+	extension = "\0";
+
+    
+      Photo* format = f.GetFormat(extension);
+      
+      if (format){
+	printf("\tFormat found.\n");
+	format->SetName(file);
+	if (format->Open()){
+	  
+	  printf("\tDimensions: %dx%d, %d bits\n",
+		 format->GetWidth(), format->GetHeight(),
+		 format->GetBitDepth());
+
+	  photogrp.AddPhoto(format);
+	}
+      } else {
+	printf("Format not found\n");
+      }
+      
   }
+
+  printf("\n\t %d photos added\n", photogrp.GetPhotoCount());
   
   
 }

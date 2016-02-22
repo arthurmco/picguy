@@ -1,5 +1,12 @@
 #include "Photo.hpp"
 
+static int lastid = 0;
+
+Photo::Photo(){
+  /* Get an ID */
+  _id = lastid++;
+}
+
 const char* Photo::GetFileExtension(){
   if (_name != ""){
     return strrchr(_name.c_str(), '.');
@@ -17,3 +24,6 @@ void Photo::SetName(const char* name){
 Pixel* Photo::GetRawData(){
   return _data;
 }
+
+
+int Photo::GetID(){return _id;}

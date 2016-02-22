@@ -25,7 +25,7 @@ private:
   struct jpeg_decompress_struct cinfo;
   struct jpeg_error_mgr jerr;
 public:
-JPEGPhoto(){}
+  JPEGPhoto() : Photo() {};
 
   /* Copy constructor mandated by PhotoFormats */
   Photo* Clone() override {return new JPEGPhoto;}

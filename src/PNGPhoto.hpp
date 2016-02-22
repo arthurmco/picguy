@@ -24,6 +24,8 @@ private:
 
   int _width = 0, _height = 0, _bitdepth = 0;
 public:
+
+  PNGPhoto() : Photo() {};
   
   /* Copy constructor mandated by PhotoFormats */
   Photo* Clone() override {return new PNGPhoto;}
