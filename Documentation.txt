@@ -28,6 +28,9 @@ PICGUY
 			 struct Pixel* GetRawData() 
 				Get the pixels from the image.
 
+			 Photo* Clone()
+				Clones the object. Needs to be implemented by all subclasses, or it will not be created by the factory class.
+
 	[JPEGPhoto (inherits from Photo) - represents JPEG images
 	[GIFPhoto (inherits from Photo) - represents GIF images
 	[PNGPhoto (inherits from Photo) - represents PNG images

@@ -8,6 +8,7 @@
 #define PHOTO_HPP
 
 #include <string>
+#include <cstring>
 
 #include "Pixel.hpp"
 
@@ -17,6 +18,10 @@ protected:
   std::string _name;
 
 public:
+  Photo(){}
+
+  virtual Photo* Clone(){return new Photo;}
+  
   /* Opens a file. Returns true on success, false on failure.
      You have to use the method SetName() to set the file name. */
   virtual bool Open() {return false; }

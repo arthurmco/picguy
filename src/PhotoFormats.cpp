@@ -29,7 +29,7 @@ Photo* PhotoFormats::GetFormat(char* extension){
     int extindex = 0;
     for (auto it = _extensions.begin(); it != _extensions.end(); it++){
       if (!strcmp(extension, (*it))){
-	return _formats.at(extindex);
+	return _formats.at(extindex)->Clone();
       }
       extindex++;
     }

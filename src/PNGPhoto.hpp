@@ -1,34 +1,32 @@
-/* JPEGPhoto.hpp
-   Class that handles JPEG images
+/* PNGPhoto.hpp
+   Class that handles PNG images
 
    Copyright (C) 2016 - Arthur M 
 */
 
 
-#ifndef JPEGPHOTO_HPP
-#define JPEGPHOTO_HPP
-
-#include <stdio.h> //FILE* 
+#ifndef PNGPHOTO_HPP
+#define PNGPHOTO_HPP
 
 #include "Photo.hpp"
 
-//libjpeg header
-
 extern "C" {
- #include <jpeglib.h> 
+#include <png.h>
 }
 
-class JPEGPhoto : public Photo {
+class PNGPhoto : public Photo {
 private:
-  FILE* photo_f = NULL;
+  FILE* f_PNG = NULL;
 
-  struct jpeg_decompress_struct cinfo;
-  struct jpeg_error_mgr jerr;
+  /* PNG library structures */
+  png_infop _pnginfo;
+  png_structp _pngstr;
+
+  int _width = 0, _height = 0, _bitdepth = 0;
 public:
-JPEGPhoto(){}
-
+  
   /* Copy constructor mandated by PhotoFormats */
-  Photo* Clone() override {return new JPEGPhoto;}
+  Photo* Clone() override {return new PNGPhoto;}
   
   /* Opens a file. Returns true on success, false on failure.
      You have to use the method SetName() to set the file name. */
@@ -40,8 +38,9 @@ JPEGPhoto(){}
 
 Pixel* GetRawData();
 
-  ~JPEGPhoto();
-};
+  ~PNGPhoto();
 
+
+};
 
 #endif

@@ -10,6 +10,7 @@
 #include "PhotoFormats.hpp"
 
 #include "JPEGPhoto.hpp"
+#include "PNGPhoto.hpp"
 
 int main(int argc, char* argv[]){
   if (argc < 2){
@@ -20,8 +21,10 @@ int main(int argc, char* argv[]){
 
   PhotoFormats f;
 
-  /* Create formats */
+  /* Register supported formats */
   f.RegisterFormat(".jpg", new JPEGPhoto());
+  f.RegisterFormat(".jpeg", new JPEGPhoto());
+  f.RegisterFormat(".png", new PNGPhoto());
   
   char* file = argv[1];
   char* extension = strrchr(file, '.');
