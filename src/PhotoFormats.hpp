@@ -19,7 +19,7 @@ class PhotoFormats {
 private:
 
   /* The integer is a index on the extension list */
-  std::map<int/*extension*/,Photo/*format*/> _formats;
+  std::map<int/*extension*/,Photo*/*format*/> _formats;
 
   /* The extension list */
   std::vector<char*> _extensions;

@@ -19,14 +19,28 @@ int main(int argc, char* argv[]){
   }
 
   PhotoFormats f;
-  f.RegisterFormat(".jpg", new JPEGPhoto);
+
+  /* Create formats */
+  f.RegisterFormat(".jpg", new JPEGPhoto());
+  
   char* file = argv[1];
   char* extension = strrchr(file, '.');
 
+  //No extension
+  if (!extension)
+    extension = "\0";
+  
   Photo* format = f.GetFormat(extension);
-
+  
   if (format){
     printf("Format found.\n");
+    format->SetName(file);
+    if (format->Open()){
+
+      printf("Dimensions: %dx%d, %d bits\n",
+	     format->GetWidth(), format->GetHeight(),
+	     format->GetBitDepth());
+    }
   } else {
     printf("Format not found\n");
   }

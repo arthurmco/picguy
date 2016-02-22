@@ -8,22 +8,38 @@
 #ifndef JPEGPHOTO_HPP
 #define JPEGPHOTO_HPP
 
+#include <stdio.h> //FILE* 
+
 #include "Photo.hpp"
 
-class JPEGPhoto : public Photo {
+//libjpeg header
 
+extern "C" {
+ #include <jpeglib.h> 
+}
+
+class JPEGPhoto : public Photo {
+private:
+  FILE* photo_f = NULL;
+
+  struct jpeg_decompress_struct cinfo;
+  struct jpeg_error_mgr jerr;
 public:
+JPEGPhoto(){}
+
   /* Opens a file. Returns true on success, false on failure.
      You have to use the method SetName() to set the file name. */
-  bool Open();
+  bool Open() override;
 
   const char* GetFileExtension() {return ".jpg";}
   
-  int GetWidth();
-  int GetHeight();
-  int GetBitDepth();
+  int GetWidth() override;
+  int GetHeight() override;
+  int GetBitDepth() override;
 
-  
+Pixel* GetRawData();
+
+  ~JPEGPhoto();
 };
 
 

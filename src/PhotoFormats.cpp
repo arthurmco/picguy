@@ -2,11 +2,12 @@
 
 PhotoFormats::PhotoFormats(){
   _extensions = std::vector<char*>();
+  _formats = std::map<int, Photo*>();
 }
 
 void PhotoFormats::RegisterFormat(char* extension, Photo* format){
   _extensions.push_back(extension);
-  _formats.emplace(_extensions.size()-1, *format);
+  _formats.emplace(_extensions.size()-1, format);
 }
 void PhotoFormats::UnregisterFormat(char* extension){
   int extindex = 0;
@@ -21,13 +22,14 @@ void PhotoFormats::UnregisterFormat(char* extension){
   return;
 }
 
-/* Get a format. Return NULL if it does not exist */
+/* Get a format. Return false if it does not exist.
+   Return true if it exists and put the format on fmt*/
 Photo* PhotoFormats::GetFormat(char* extension){
   try {
     int extindex = 0;
     for (auto it = _extensions.begin(); it != _extensions.end(); it++){
       if (!strcmp(extension, (*it))){
-	  return new Photo(_formats.at(extindex));
+	return _formats.at(extindex);
       }
       extindex++;
     }

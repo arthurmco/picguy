@@ -19,16 +19,16 @@ protected:
 public:
   /* Opens a file. Returns true on success, false on failure.
      You have to use the method SetName() to set the file name. */
-  bool Open() {return false; }
+  virtual bool Open() {return false; }
 
   const char* GetName();
   void SetName(const char*);
 
   const char* GetFileExtension();
 
-  int GetWidth(){return 0;}
-  int GetHeight(){return 0;}
-  int GetBitDepth(){return 0;}
+  virtual int GetWidth(){return 0;}
+  virtual int GetHeight(){return 0;}
+  virtual int GetBitDepth(){return 0;}
 
   Pixel* GetRawData();
   
