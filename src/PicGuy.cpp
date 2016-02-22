@@ -5,6 +5,7 @@
 */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "PhotoFormats.hpp"
@@ -44,15 +45,22 @@ int main(int argc, char* argv[]){
       Photo* format = f.GetFormat(extension);
       
       if (format){
-	printf("\tFormat found.\n");
 	format->SetName(file);
 	if (format->Open()){
-	  
+ 	  
 	  printf("\tDimensions: %dx%d, %d bits\n",
 		 format->GetWidth(), format->GetHeight(),
 		 format->GetBitDepth());
 
 	  photogrp.AddPhoto(format);
+	} else {
+	  char err[128];
+	  memset(err, '\0', 128);
+
+	  printf("Error: ");
+	  perror(err);
+	  printf("\n");
+	
 	}
       } else {
 	printf("Format not found\n");
