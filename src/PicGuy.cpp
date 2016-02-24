@@ -20,17 +20,35 @@ extern "C" {
 #include <gtk/gtk.h>
 }
 
+#include <dirent.h>
+
 enum ColPhotos {
   COL_NAME = 0, NCOLS
 };
 
 std::map<std::string, Photo*> photo_string;
+
 PhotoFormats f;
+
 GtkWidget* main_win;
 
-static void gapp_add_photo_to_list(GtkTreeStore* store, gchar* name){
-
+static void gapp_add_photo_to_list(GtkTreeStore* store, gchar* name, GtkTreeIter* parent){  
   Photo* photoInstance = f.GetFormat(strrchr(name, '.'));
+
+  if (!photoInstance){
+
+    GtkWidget* msgbox = gtk_message_dialog_new(GTK_WINDOW(main_win),
+					       GTK_DIALOG_DESTROY_WITH_PARENT,
+					       GTK_MESSAGE_ERROR,
+					       GTK_BUTTONS_CLOSE,
+					       "Error while opening %s.\nUnrecognized format.",
+					       name);
+    gtk_dialog_run(GTK_DIALOG(msgbox));
+    gtk_widget_destroy(msgbox);
+    return;					       
+
+  }
+  
   photoInstance->SetName(name);
   if (!photoInstance->Open()){
     //Error while opening the photo
@@ -48,19 +66,99 @@ static void gapp_add_photo_to_list(GtkTreeStore* store, gchar* name){
   }
 
   
-  /* Search the file name and add it if it doesn't exist */
-  if (photo_string.count(std::string(name)) == 0){
-    photo_string.insert(std::pair<std::string, Photo*>(std::string(name), photoInstance)); //TODO: Instantiate and add a Photo object here.
-    
-    GtkTreeIter it;
-    gtk_tree_store_append(store, &it, NULL);
-    gtk_tree_store_set(store, &it, COL_NAME, name, -1);
-    g_print("Photo added: %s\n", name);    
+  /* Search the file name and add it if it doesn't exist
+     Unfortunately I will have to iterate.
+     The count() element doesn't seems to work with strings */
+  bool found = false;
+  for (auto ph_it = photo_string.begin(); ph_it != photo_string.end(); ph_it++){
+
+    if (!ph_it->first.compare(std::string(name))){
+      
+      found = true;
+      break;
+    }
   }
+
+  if (!found){
+    
+    photo_string.insert(std::pair<std::string, Photo*>
+			(std::string(name), photoInstance)); //TODO: Instantiate and add a Photo object here.
+      
+      GtkTreeIter it;
+      gtk_tree_store_append(store, &it, parent);
+      gtk_tree_store_set(store, &it, COL_NAME, name, -1);
+      g_print("Photo added: %s\n", name);
+  }
+
   
 }
 
-static void gapp_add_photo_click(GtkButton* btn, gpointer* data){
+static void gapp_add_folder_click(GtkButton* btn, gpointer data){
+  g_print("Adding folder... \n");
+
+  GtkWidget* dlgOpenDir;
+  dlgOpenDir = gtk_file_chooser_dialog_new("Add Folder", GTK_WINDOW(main_win),
+					   GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+					   "Cancel", GTK_RESPONSE_CANCEL,
+					   "Add", GTK_RESPONSE_ACCEPT,
+					   NULL);
+
+  gint res = gtk_dialog_run(GTK_DIALOG(dlgOpenDir));
+  if (res == GTK_RESPONSE_ACCEPT){
+    GtkFileChooser* filechooser = GTK_FILE_CHOOSER(dlgOpenDir);
+    gchar* folder = gtk_file_chooser_get_filename(filechooser);
+
+    /* Add all files from that directory in the list
+       TODO: Separate them in photo groups */
+    DIR* dir = opendir(folder);
+
+    if (!dir){
+      char* errname = strerror(errno);
+      GtkWidget* msgbox = gtk_message_dialog_new(GTK_WINDOW(main_win),
+						 GTK_DIALOG_DESTROY_WITH_PARENT,
+						 GTK_MESSAGE_ERROR,
+						 GTK_BUTTONS_CLOSE,
+						 "Error while opening directory %s.\n%s",
+						 folder, errname);
+      gtk_dialog_run(GTK_DIALOG(msgbox));
+      gtk_widget_destroy(msgbox);
+      return;
+   
+    }
+    
+    struct dirent* dirent; 
+
+    GtkTreeIter it;
+    gtk_tree_store_append((GtkTreeStore*)data, &it, NULL);
+    gtk_tree_store_set((GtkTreeStore*)data, &it, COL_NAME, folder, -1);
+
+    while (dirent = readdir(dir)){
+      //Is the directory entry a file?
+      if (dirent->d_type == DT_REG){
+
+	//Add a tree item representing the directory
+	g_print("Adding child file %s\n", dirent->d_name);
+
+	std::string fullpath = std::string(folder);
+	fullpath.append("/");
+	fullpath.append(dirent->d_name);
+	
+	gapp_add_photo_to_list((GtkTreeStore*)data, (gchar*)fullpath.c_str(), &it);
+
+      }
+
+    }
+
+    closedir(dir);
+    
+  }
+
+  gtk_widget_destroy(dlgOpenDir);
+
+  
+}
+
+static void gapp_add_photo_click(GtkButton* btn, gpointer data){
   /* Create a open dialog to add a photo */
   g_print("Adding photo... \n");
 
@@ -74,8 +172,7 @@ static void gapp_add_photo_click(GtkButton* btn, gpointer* data){
   if (res == GTK_RESPONSE_ACCEPT){
     GtkFileChooser* filechooser = GTK_FILE_CHOOSER(dlgOpenFile);
     gchar* name = gtk_file_chooser_get_filename(filechooser);
-    gapp_add_photo_to_list((GtkTreeStore*)data, name);
-    g_free(name);
+    gapp_add_photo_to_list((GtkTreeStore*)data, name, NULL);
     
   }
 
@@ -88,7 +185,7 @@ static void gapp_add_photo_click(GtkButton* btn, gpointer* data){
 static void gapp_activate(GtkApplication* gapp,
 			  gpointer data){
   //Widgets
-  GtkWidget *treePhotos, *btnAddPhoto;
+  GtkWidget *treePhotos, *btnAddPhoto, *btnAddFolder;
   treePhotos = gtk_tree_view_new();
 
   ///Add tree view columns
@@ -106,12 +203,16 @@ static void gapp_activate(GtkApplication* gapp,
   //Add photo button
   btnAddPhoto = gtk_button_new_with_label("Add Photo");
   g_signal_connect(btnAddPhoto, "clicked", G_CALLBACK(gapp_add_photo_click), storePhotos);
+
+  btnAddFolder = gtk_button_new_with_label("Add Folder");
+  g_signal_connect(btnAddFolder, "clicked", G_CALLBACK(gapp_add_folder_click), storePhotos);
   
   //Main grid
   GtkWidget* grid;
   grid = gtk_grid_new();
-  gtk_grid_attach(GTK_GRID(grid), treePhotos, 0, 0, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), treePhotos, 0, 0, 2, 1);
   gtk_grid_attach(GTK_GRID(grid), btnAddPhoto, 0, 1, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), btnAddFolder, 1, 1, 1, 1);
 
   gtk_grid_set_column_homogeneous(GTK_GRID(grid), TRUE);
   
@@ -128,7 +229,6 @@ static void gapp_activate(GtkApplication* gapp,
 
 int main(int argc, char* argv[]){
 
-  photo_string = std::map<gchar*, Photo*>();
   /* Register supported formats */
   f.RegisterFormat(".jpg", new JPEGPhoto());
   f.RegisterFormat(".jpeg", new JPEGPhoto());
