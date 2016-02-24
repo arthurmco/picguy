@@ -1,15 +1,18 @@
 CXX=g++
-CLIBS= -ljpeg -lpng
-CXXFLAGS= -std=c++11 -g $(CLIBS)
+
+GTKLIBS= $(shell pkg-config --libs gtk+-3.0)
+CLIBS= -ljpeg -lpng 
+
+GTKFLAGS= $(shell pkg-config --cflags gtk+-3.0)
+CXXFLAGS=  -std=c++11 -g $(CLIBS)
 
 OUT=picguy
 
 all: PicGuy.o Photo.o JPEGPhoto.o PNGPhoto.o PhotoFormats.o PhotoGroup.o
-	$(CXX) $^ -o $(OUT) $(CXXFLAGS)
+	$(CXX) $^ -o $(OUT) $(GTKFLAGS) $(CXXFLAGS) $(GTKLIBS)
 
 PhotoFormats.o: src/PhotoFormats.cpp src/PhotoFormats.hpp
-	$(CXX) -o $@ -c $< $(CXXFLAGS)
-
+	$(CXX) -o $@ -c $<  $(CXXFLAGS)
 
 Photo.o: src/Photo.cpp src/PhotoFormats.hpp src/Pixel.hpp
 	$(CXX) -o $@ -c $< $(CXXFLAGS)
@@ -24,7 +27,7 @@ PhotoGroup.o: src/PhotoGroup.cpp src/PhotoGroup.hpp
 	$(CXX) -o $@ -c $< $(CXXFLAGS)
 
 PicGuy.o: src/PicGuy.cpp 
-	$(CXX) -o $@ -c $< $(CXXFLAGS)
+	$(CXX) -o $@ -c $< $(GTKFLAGS) $(CXXFLAGS) $(GTKLIBS)
 
 
 clean:
