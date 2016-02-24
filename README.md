@@ -11,11 +11,14 @@ Will allow you to split the photos you have in groups, tag them, and (possibly) 
 
 Will support JPEG, GIF, PNG, BMP and possibly TIFF and RAW images.
 
-I still haven't decided if it will use GTK or Qt. Probably GTK.
+It uses GTK 3.0 to build the graphical interface.
 
 # Dependencies
 
 * libpng (PNG support)
 
 * libjpeg (JPEG support)
+
+* GTK 3.0
+
 
