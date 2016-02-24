@@ -9,6 +9,7 @@
 #define JPEGPHOTO_HPP
 
 #include <stdio.h> //FILE* 
+#include <stdexcept>
 
 #include "Photo.hpp"
 

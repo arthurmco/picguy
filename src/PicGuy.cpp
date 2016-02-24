@@ -24,14 +24,14 @@ enum ColPhotos {
   COL_NAME = 0, NCOLS
 };
 
-std::map<gchar*, Photo*> photo_string;
+std::map<std::string, Photo*> photo_string;
 PhotoFormats f;
 GtkWidget* main_win;
 
 static void gapp_add_photo_to_list(GtkTreeStore* store, gchar* name){
 
   Photo* photoInstance = f.GetFormat(strrchr(name, '.'));
-  
+  photoInstance->SetName(name);
   if (!photoInstance->Open()){
     //Error while opening the photo
     char* errname = strerror(errno);
@@ -48,12 +48,16 @@ static void gapp_add_photo_to_list(GtkTreeStore* store, gchar* name){
   }
 
   
-  GtkTreeIter it;
-  gtk_tree_store_append(store, &it, NULL);
-  gtk_tree_store_set(store, &it, COL_NAME, name, -1);
+  /* Search the file name and add it if it doesn't exist */
+  if (photo_string.count(std::string(name)) == 0){
+    photo_string.insert(std::pair<std::string, Photo*>(std::string(name), photoInstance)); //TODO: Instantiate and add a Photo object here.
+    
+    GtkTreeIter it;
+    gtk_tree_store_append(store, &it, NULL);
+    gtk_tree_store_set(store, &it, COL_NAME, name, -1);
+    g_print("Photo added: %s\n", name);    
+  }
   
-  photo_string.emplace(name, photoInstance); //TODO: Instantiate and add a Photo object here.
-
 }
 
 static void gapp_add_photo_click(GtkButton* btn, gpointer* data){
@@ -109,6 +113,7 @@ static void gapp_activate(GtkApplication* gapp,
   gtk_grid_attach(GTK_GRID(grid), treePhotos, 0, 0, 1, 1);
   gtk_grid_attach(GTK_GRID(grid), btnAddPhoto, 0, 1, 1, 1);
 
+  gtk_grid_set_column_homogeneous(GTK_GRID(grid), TRUE);
   
   //Main window
   main_win = gtk_application_window_new(gapp);
