@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <map>
+
 #include "PhotoFormats.hpp"
 #include "PhotoGroup.hpp"
 
@@ -22,6 +24,62 @@ enum ColPhotos {
   COL_NAME = 0, NCOLS
 };
 
+std::map<gchar*, Photo*> photo_string;
+PhotoFormats f;
+GtkWidget* main_win;
+
+static void gapp_add_photo_to_list(GtkTreeStore* store, gchar* name){
+
+  Photo* photoInstance = f.GetFormat(strrchr(name, '.'));
+  
+  if (!photoInstance->Open()){
+    //Error while opening the photo
+    char* errname = strerror(errno);
+    GtkWidget* msgbox = gtk_message_dialog_new(GTK_WINDOW(main_win),
+					       GTK_DIALOG_DESTROY_WITH_PARENT,
+					       GTK_MESSAGE_ERROR,
+					       GTK_BUTTONS_CLOSE,
+					       "Error while opening %s.\n%s",
+					       name, errname);
+    gtk_dialog_run(GTK_DIALOG(msgbox));
+    gtk_widget_destroy(msgbox);
+    errno = 0;
+    return;					       
+  }
+
+  
+  GtkTreeIter it;
+  gtk_tree_store_append(store, &it, NULL);
+  gtk_tree_store_set(store, &it, COL_NAME, name, -1);
+  
+  photo_string.emplace(name, photoInstance); //TODO: Instantiate and add a Photo object here.
+
+}
+
+static void gapp_add_photo_click(GtkButton* btn, gpointer* data){
+  /* Create a open dialog to add a photo */
+  g_print("Adding photo... \n");
+
+  GtkWidget* dlgOpenFile;
+  dlgOpenFile = gtk_file_chooser_dialog_new("Add Photo", GTK_WINDOW(main_win),
+			      GTK_FILE_CHOOSER_ACTION_OPEN,
+			      "Cancel", GTK_RESPONSE_CANCEL,
+			      "Add", GTK_RESPONSE_ACCEPT,
+			      NULL);
+  gint res = gtk_dialog_run(GTK_DIALOG(dlgOpenFile));
+  if (res == GTK_RESPONSE_ACCEPT){
+    GtkFileChooser* filechooser = GTK_FILE_CHOOSER(dlgOpenFile);
+    gchar* name = gtk_file_chooser_get_filename(filechooser);
+    gapp_add_photo_to_list((GtkTreeStore*)data, name);
+    g_free(name);
+    
+  }
+
+  gtk_widget_destroy(dlgOpenFile);
+			      
+			      
+}
+
 /* This function runs when the GTK main loop is run */
 static void gapp_activate(GtkApplication* gapp,
 			  gpointer data){
@@ -33,25 +91,17 @@ static void gapp_activate(GtkApplication* gapp,
 
   GtkCellRenderer* renderer = gtk_cell_renderer_text_new();
   GtkTreeViewColumn* colPhotoName = gtk_tree_view_column_new_with_attributes("Name", renderer,
-									     COL_NAME, "cname", NULL);
+									     "text", COL_NAME, NULL);
    ///The list store object, used for adding rows to tree view
   GtkTreeStore* storePhotos = gtk_tree_store_new(NCOLS, G_TYPE_STRING);
   
   //Test item to test list insertion
-  
-  GtkTreeIter it;
-  gtk_tree_store_append(storePhotos, &it, NULL);
-  gtk_tree_store_set(storePhotos, &it, COL_NAME, "Teste", -1);
-
-  GtkTreeIter it2;
-  gtk_tree_store_append(storePhotos, &it2, NULL);
-  gtk_tree_store_set(storePhotos, &it2, COL_NAME, "Test.jpg", -1);
-
   gtk_tree_view_append_column(GTK_TREE_VIEW(treePhotos), colPhotoName);
   gtk_tree_view_set_model(GTK_TREE_VIEW(treePhotos), GTK_TREE_MODEL(storePhotos));
 
-  
+  //Add photo button
   btnAddPhoto = gtk_button_new_with_label("Add Photo");
+  g_signal_connect(btnAddPhoto, "clicked", G_CALLBACK(gapp_add_photo_click), storePhotos);
   
   //Main grid
   GtkWidget* grid;
@@ -61,7 +111,6 @@ static void gapp_activate(GtkApplication* gapp,
 
   
   //Main window
-  GtkWidget* main_win;
   main_win = gtk_application_window_new(gapp);
 
   gtk_window_set_title(GTK_WINDOW(main_win), "PicGuy");
@@ -74,8 +123,7 @@ static void gapp_activate(GtkApplication* gapp,
 
 int main(int argc, char* argv[]){
 
-  PhotoFormats f;
-
+  photo_string = std::map<gchar*, Photo*>();
   /* Register supported formats */
   f.RegisterFormat(".jpg", new JPEGPhoto());
   f.RegisterFormat(".jpeg", new JPEGPhoto());
