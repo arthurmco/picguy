@@ -40,9 +40,13 @@ struct PhotoListInfo {
   } item;
 };
 
+/* Container of all widgets this window have */
+struct {
+  GtkWidget* lblPhotoInformation = NULL;
+  GtkWidget *treePhotos, *btnAddPhoto, *btnAddFolder;
+} widgets;
+
 std::map<std::string, PhotoListInfo> photo_string;
-
-
 PhotoFormats f;
 
 GtkWidget* main_win;
@@ -240,25 +244,53 @@ static void gapp_add_photo_click(GtkButton* btn, gpointer data){
 			      
 }
 
+
 static void gapp_tree_rowactivated(GtkTreeView* treeView, GtkTreePath* path,
 				   GtkTreeViewColumn* col, GtkTreeStore* store){
-  g_print("Row clicked");
-
+  
+  gchar* pname;
+  GValue pval = G_VALUE_INIT;
+  
   /* Get the iterator for the item */
   GtkTreeIter it;
   gtk_tree_model_get_iter(GTK_TREE_MODEL(store), &it, path);
+  gtk_tree_model_get_value(GTK_TREE_MODEL(store), &it, COL_NAME, &pval);
+  pname = *(gchar**)pval.data;
+  
+  g_print("Row clicked %s\n", pname);
 
   /* Retrieve name and search in photo_string map */
-  
+  std::string name(pname);
+  auto it_photo = photo_string.find(name);
+  g_print("%d \n", it_photo->second.type);
+
+  char message[128];
+
+  switch (it_photo->second.type){
+  case LIST_PHOTO:
+    sprintf(message, "%s, %d x %d pixels",
+	    name.substr(name.find_last_of('/')+1, std::string::npos).c_str(),
+	    it_photo->second.item.photo->GetWidth(),
+	    it_photo->second.item.photo->GetHeight());
+    break;
+  case LIST_PHOTOGROUP:
+    sprintf(message, "%s, %d photos",
+	    name.c_str(), it_photo->second.item.group->GetPhotoCount());
+    break;
+  }
+
+  gtk_label_set_text(GTK_LABEL(widgets.lblPhotoInformation), message);
   
 }
+
+
 
 /* This function runs when the GTK main loop is run */
 static void gapp_activate(GtkApplication* gapp,
 			  gpointer data){
   //Widgets
-  GtkWidget *treePhotos, *btnAddPhoto, *btnAddFolder;
-  treePhotos = gtk_tree_view_new();
+
+  widgets.treePhotos = gtk_tree_view_new();
 
   ///Add tree view columns
 
@@ -269,24 +301,28 @@ static void gapp_activate(GtkApplication* gapp,
   GtkTreeStore* storePhotos = gtk_tree_store_new(NCOLS, G_TYPE_STRING);
   
   //Test item to test list insertion
-  gtk_tree_view_append_column(GTK_TREE_VIEW(treePhotos), colPhotoName);
-  gtk_tree_view_set_model(GTK_TREE_VIEW(treePhotos), GTK_TREE_MODEL(storePhotos));
-
+  gtk_tree_view_append_column(GTK_TREE_VIEW(widgets.treePhotos), colPhotoName);
+  gtk_tree_view_set_model(GTK_TREE_VIEW(widgets.treePhotos), GTK_TREE_MODEL(storePhotos));  
   //Add photo button
-  btnAddPhoto = gtk_button_new_with_label("Add Photo");
-  g_signal_connect(btnAddPhoto, "clicked", G_CALLBACK(gapp_add_photo_click), storePhotos);
+  widgets.btnAddPhoto = gtk_button_new_with_label("Add Photo");
+  g_signal_connect(widgets.btnAddPhoto, "clicked", G_CALLBACK(gapp_add_photo_click), storePhotos);
 
-  btnAddFolder = gtk_button_new_with_label("Add Folder");
-  g_signal_connect(btnAddFolder, "clicked", G_CALLBACK(gapp_add_folder_click), storePhotos);
+  widgets.btnAddFolder = gtk_button_new_with_label("Add Folder");
+  g_signal_connect(widgets.btnAddFolder, "clicked", G_CALLBACK(gapp_add_folder_click), storePhotos);
 
-  g_signal_connect(treePhotos, "row-activated", G_CALLBACK(gapp_tree_rowactivated), storePhotos);
+  //Setup the label with photo information
+  widgets.lblPhotoInformation = gtk_label_new("Please select a photo");
+
+  
+  g_signal_connect(widgets.treePhotos, "row-activated", G_CALLBACK(gapp_tree_rowactivated), storePhotos);
   
   //Main grid
   GtkWidget* grid;
   grid = gtk_grid_new();
-  gtk_grid_attach(GTK_GRID(grid), treePhotos, 0, 0, 2, 1);
-  gtk_grid_attach(GTK_GRID(grid), btnAddPhoto, 0, 1, 1, 1);
-  gtk_grid_attach(GTK_GRID(grid), btnAddFolder, 1, 1, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), widgets.treePhotos, 0, 0, 2, 1);
+  gtk_grid_attach(GTK_GRID(grid), widgets.btnAddPhoto, 0, 1, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), widgets.btnAddFolder, 1, 1, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), widgets.lblPhotoInformation, 0, 2, 1, 2);
 
   gtk_grid_set_column_homogeneous(GTK_GRID(grid), TRUE);
   
