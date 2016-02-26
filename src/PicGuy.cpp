@@ -46,10 +46,31 @@ struct {
   GtkWidget *treePhotos, *btnAddPhoto, *btnAddFolder;
 } widgets;
 
+/* Additional error codes for photo addition 
+   TODO: Maybe move them to Photo.hpp?*/
+enum PhotoErrors {
+  PERR_INVALIDFORMAT = -1024,
+};
+
 std::map<std::string, PhotoListInfo> photo_string;
 PhotoFormats f;
 
 GtkWidget* main_win;
+
+char* picguy_strerror(int _errno){
+  char* str;
+  switch (_errno){
+  case PERR_INVALIDFORMAT:
+    str = new char[32];
+    strcpy(str, "Unrecognized format.");
+    break;
+  default:
+    str = strerror(errno);
+    break;
+  }
+
+  return str;
+}
 
 static int gapp_add_photo_to_list(GtkTreeStore* store, gchar* name, GtkTreeIter* parent,
 				  PhotoGroup* grp = NULL){  
@@ -57,7 +78,7 @@ static int gapp_add_photo_to_list(GtkTreeStore* store, gchar* name, GtkTreeIter*
 
   if (!photoInstance){
 
-    return EINVAL;
+    return PERR_INVALIDFORMAT;
   }
   
   photoInstance->SetName(name);
@@ -126,7 +147,7 @@ static void gapp_add_folder_click(GtkButton* btn, gpointer data){
     DIR* dir = opendir(folder);
 
     if (!dir){
-      char* errname = strerror(errno);
+      char* errname = picguy_strerror(errno);
       GtkWidget* msgbox = gtk_message_dialog_new(GTK_WINDOW(main_win),
 						 GTK_DIALOG_DESTROY_WITH_PARENT,
 						 GTK_MESSAGE_ERROR,
@@ -156,6 +177,7 @@ static void gapp_add_folder_click(GtkButton* btn, gpointer data){
     gtk_tree_store_append((GtkTreeStore*)data, &it, NULL);
     gtk_tree_store_set((GtkTreeStore*)data, &it, COL_NAME, folder, -1);
     bool errors = false;
+    bool count = 0;
     std::string error_desc = "";
     
     while (dirent = readdir(dir)){
@@ -169,14 +191,22 @@ static void gapp_add_folder_click(GtkButton* btn, gpointer data){
 	fullpath.append("/");
 	fullpath.append(dirent->d_name);
 	int ret_add = gapp_add_photo_to_list((GtkTreeStore*)data, (gchar*)fullpath.c_str(), &it, grp);
+	count++;
 	
 	if (ret_add != 0){
-	  errors = true;
-	  error_desc.append(fullpath);
-	  error_desc.append(": ");
-	  error_desc.append(strerror(ret_add));
-	  error_desc.append("\n");
-	  errno = 0;
+	  /* If you add a folder with a format PicGuy don't knows
+	     how to open, it doesn't even show an error, because
+	     in the majority of cases, they won't be images
+	     anyway */     
+	     
+	  if (ret_add != PERR_INVALIDFORMAT){
+	    errors = true;
+	    error_desc.append(fullpath);
+	    error_desc.append(": ");
+	    error_desc.append(picguy_strerror(ret_add));
+	    error_desc.append("\n");
+	    errno = 0;
+	  }
 	}
 
       }
@@ -222,10 +252,10 @@ static void gapp_add_photo_click(GtkButton* btn, gpointer data){
 
     int ret_add = gapp_add_photo_to_list((GtkTreeStore*)data, name, NULL);
     
-    if (ret_add != 0){
+    if (ret_add != 0){      
       //Error occurred.
       //Error while opening the photo
-      char* errname = strerror(errno);
+      char* errname = picguy_strerror(ret_add);
       GtkWidget* msgbox = gtk_message_dialog_new(GTK_WINDOW(main_win),
 						 GTK_DIALOG_DESTROY_WITH_PARENT,
 						 GTK_MESSAGE_ERROR,
@@ -264,14 +294,15 @@ static void gapp_tree_rowactivated(GtkTreeView* treeView, GtkTreePath* path,
   auto it_photo = photo_string.find(name);
   g_print("%d \n", it_photo->second.type);
 
-  char message[128];
+  char message[256];
 
   switch (it_photo->second.type){
   case LIST_PHOTO:
-    sprintf(message, "%s, %d x %d pixels",
+    sprintf(message, "%s, %d x %d pixels, %d kB",
 	    name.substr(name.find_last_of('/')+1, std::string::npos).c_str(),
 	    it_photo->second.item.photo->GetWidth(),
-	    it_photo->second.item.photo->GetHeight());
+	    it_photo->second.item.photo->GetHeight(),
+	    it_photo->second.item.photo->GetSize() / 1024);
     break;
   case LIST_PHOTOGROUP:
     sprintf(message, "%s, %d photos",

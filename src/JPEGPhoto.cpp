@@ -57,6 +57,24 @@ Pixel* JPEGPhoto::GetRawData(){
 }
 
 
+/* Returns file size, in bytes */
+long JPEGPhoto::GetSize(){
+  /* Opens a file descriptor, fstat()it, get the size and close */
+  int fd = open(_name.c_str(), O_RDONLY);
+
+  if (fd < 0)
+    return 0; //Error opening the file.
+
+  struct stat st;
+  fstat(fd, &st);
+		
+  long size = st.st_size;
+  
+  close(fd);
+
+  return size;
+}
+
 JPEGPhoto::~JPEGPhoto(){
   if (photo_f)
     fclose(photo_f);

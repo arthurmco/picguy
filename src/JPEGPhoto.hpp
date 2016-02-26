@@ -8,7 +8,12 @@
 #ifndef JPEGPHOTO_HPP
 #define JPEGPHOTO_HPP
 
-#include <stdio.h> //FILE* 
+#include <stdio.h> //FILE*
+
+#include <sys/stat.h> // struct stat
+#include <unistd.h>   // and fstat()
+#include <fcntl.h>    // open()
+
 #include <stdexcept>
 
 #include "Photo.hpp"
@@ -39,6 +44,9 @@ public:
   int GetHeight() override;
   int GetBitDepth() override;
 
+  /* Returns file size, in bytes */
+  long GetSize() override;
+  
 Pixel* GetRawData();
 
   ~JPEGPhoto();

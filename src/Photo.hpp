@@ -37,6 +37,9 @@ public:
   virtual int GetHeight(){return 0;}
   virtual int GetBitDepth(){return 0;}
 
+  /* Returns file size, in bytes */
+  virtual long GetSize(){return 0;}
+  
   int GetID();
   
   Pixel* GetRawData();

@@ -1,3 +1,4 @@
+
 /* PNGPhoto.hpp
    Class that handles PNG images
 
@@ -7,6 +8,10 @@
 
 #ifndef PNGPHOTO_HPP
 #define PNGPHOTO_HPP
+
+#include <sys/stat.h> // struct stat
+#include <unistd.h>   // and fstat()
+#include <fcntl.h>    // open()
 
 #include "Photo.hpp"
 
@@ -37,7 +42,8 @@ public:
   int GetWidth() override;
   int GetHeight() override;
   int GetBitDepth() override;
-
+  long GetSize() override;
+  
 Pixel* GetRawData();
 
   ~PNGPhoto();
