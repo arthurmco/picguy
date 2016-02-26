@@ -26,43 +26,40 @@ enum ColPhotos {
   COL_NAME = 0, NCOLS
 };
 
-std::map<std::string, Photo*> photo_string;
+/* Type of item in the photo listing tree view */
+enum PhotoTreeItemType {
+  LIST_PHOTO,
+  LIST_PHOTOGROUP,
+};
+
+struct PhotoListInfo {
+  int type;
+  union {
+    Photo* photo;
+    PhotoGroup* group;
+  } item;
+};
+
+std::map<std::string, PhotoListInfo> photo_string;
+
 
 PhotoFormats f;
 
 GtkWidget* main_win;
 
-static void gapp_add_photo_to_list(GtkTreeStore* store, gchar* name, GtkTreeIter* parent){  
+static int gapp_add_photo_to_list(GtkTreeStore* store, gchar* name, GtkTreeIter* parent,
+				  PhotoGroup* grp = NULL){  
   Photo* photoInstance = f.GetFormat(strrchr(name, '.'));
 
   if (!photoInstance){
 
-    GtkWidget* msgbox = gtk_message_dialog_new(GTK_WINDOW(main_win),
-					       GTK_DIALOG_DESTROY_WITH_PARENT,
-					       GTK_MESSAGE_ERROR,
-					       GTK_BUTTONS_CLOSE,
-					       "Error while opening %s.\nUnrecognized format.",
-					       name);
-    gtk_dialog_run(GTK_DIALOG(msgbox));
-    gtk_widget_destroy(msgbox);
-    return;					       
-
+    return EINVAL;
   }
   
   photoInstance->SetName(name);
   if (!photoInstance->Open()){
-    //Error while opening the photo
-    char* errname = strerror(errno);
-    GtkWidget* msgbox = gtk_message_dialog_new(GTK_WINDOW(main_win),
-					       GTK_DIALOG_DESTROY_WITH_PARENT,
-					       GTK_MESSAGE_ERROR,
-					       GTK_BUTTONS_CLOSE,
-					       "Error while opening %s.\n%s",
-					       name, errname);
-    gtk_dialog_run(GTK_DIALOG(msgbox));
-    gtk_widget_destroy(msgbox);
-    errno = 0;
-    return;					       
+     
+    return errno;					       
   }
 
   
@@ -80,15 +77,27 @@ static void gapp_add_photo_to_list(GtkTreeStore* store, gchar* name, GtkTreeIter
   }
 
   if (!found){
+
+    PhotoListInfo pli;
+    pli.type = LIST_PHOTO;
+    pli.item.photo = photoInstance;
+
+    if (grp)
+      grp->AddPhoto(photoInstance);
     
-    photo_string.insert(std::pair<std::string, Photo*>
-			(std::string(name), photoInstance)); //TODO: Instantiate and add a Photo object here.
+    photo_string.insert(std::pair<std::string, PhotoListInfo>
+			(std::string(name), pli)); //TODO: Instantiate and add a Photo object here.
       
       GtkTreeIter it;
       gtk_tree_store_append(store, &it, parent);
       gtk_tree_store_set(store, &it, COL_NAME, name, -1);
       g_print("Photo added: %s\n", name);
+      return 0;
   }
+
+  /* File is already there.
+     Return EEXIST */ 
+  return EEXIST;
 
   
 }
@@ -128,10 +137,23 @@ static void gapp_add_folder_click(GtkButton* btn, gpointer data){
     
     struct dirent* dirent; 
 
+    PhotoGroup* grp = new PhotoGroup(folder);
+    
+    PhotoListInfo pli;
+    pli.type = LIST_PHOTOGROUP;
+    pli.item.group = grp;
+    
+    photo_string.insert(std::pair<std::string, PhotoListInfo>
+			(std::string(folder), pli)); //TODO: Instantiate and add a Photo object here.
+
+
+    
     GtkTreeIter it;
     gtk_tree_store_append((GtkTreeStore*)data, &it, NULL);
     gtk_tree_store_set((GtkTreeStore*)data, &it, COL_NAME, folder, -1);
-
+    bool errors = false;
+    std::string error_desc = "";
+    
     while (dirent = readdir(dir)){
       //Is the directory entry a file?
       if (dirent->d_type == DT_REG){
@@ -142,16 +164,37 @@ static void gapp_add_folder_click(GtkButton* btn, gpointer data){
 	std::string fullpath = std::string(folder);
 	fullpath.append("/");
 	fullpath.append(dirent->d_name);
+	int ret_add = gapp_add_photo_to_list((GtkTreeStore*)data, (gchar*)fullpath.c_str(), &it, grp);
 	
-	gapp_add_photo_to_list((GtkTreeStore*)data, (gchar*)fullpath.c_str(), &it);
+	if (ret_add != 0){
+	  errors = true;
+	  error_desc.append(fullpath);
+	  error_desc.append(": ");
+	  error_desc.append(strerror(ret_add));
+	  error_desc.append("\n");
+	  errno = 0;
+	}
 
       }
 
     }
 
     closedir(dir);
-    
+
+    if (errors){
+      GtkWidget* msgbox = gtk_message_dialog_new(GTK_WINDOW(main_win),
+						 GTK_DIALOG_DESTROY_WITH_PARENT,
+						 GTK_MESSAGE_ERROR,
+						 GTK_BUTTONS_CLOSE,
+						 "The following errors happened:\n\n%s",
+						 error_desc.c_str());
+      gtk_dialog_run(GTK_DIALOG(msgbox));
+      gtk_widget_destroy(msgbox);
+
+    }
+
   }
+
 
   gtk_widget_destroy(dlgOpenDir);
 
@@ -172,13 +215,42 @@ static void gapp_add_photo_click(GtkButton* btn, gpointer data){
   if (res == GTK_RESPONSE_ACCEPT){
     GtkFileChooser* filechooser = GTK_FILE_CHOOSER(dlgOpenFile);
     gchar* name = gtk_file_chooser_get_filename(filechooser);
-    gapp_add_photo_to_list((GtkTreeStore*)data, name, NULL);
+
+    int ret_add = gapp_add_photo_to_list((GtkTreeStore*)data, name, NULL);
+    
+    if (ret_add != 0){
+      //Error occurred.
+      //Error while opening the photo
+      char* errname = strerror(errno);
+      GtkWidget* msgbox = gtk_message_dialog_new(GTK_WINDOW(main_win),
+						 GTK_DIALOG_DESTROY_WITH_PARENT,
+						 GTK_MESSAGE_ERROR,
+						 GTK_BUTTONS_CLOSE,
+						 "Error while opening %s.\n%s",
+						 name, errname);
+      gtk_dialog_run(GTK_DIALOG(msgbox));
+      gtk_widget_destroy(msgbox);
+      errno = 0;
+    }
     
   }
 
   gtk_widget_destroy(dlgOpenFile);
 			      
 			      
+}
+
+static void gapp_tree_rowactivated(GtkTreeView* treeView, GtkTreePath* path,
+				   GtkTreeViewColumn* col, GtkTreeStore* store){
+  g_print("Row clicked");
+
+  /* Get the iterator for the item */
+  GtkTreeIter it;
+  gtk_tree_model_get_iter(GTK_TREE_MODEL(store), &it, path);
+
+  /* Retrieve name and search in photo_string map */
+  
+  
 }
 
 /* This function runs when the GTK main loop is run */
@@ -206,6 +278,8 @@ static void gapp_activate(GtkApplication* gapp,
 
   btnAddFolder = gtk_button_new_with_label("Add Folder");
   g_signal_connect(btnAddFolder, "clicked", G_CALLBACK(gapp_add_folder_click), storePhotos);
+
+  g_signal_connect(treePhotos, "row-activated", G_CALLBACK(gapp_tree_rowactivated), storePhotos);
   
   //Main grid
   GtkWidget* grid;

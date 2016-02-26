@@ -15,8 +15,12 @@
 class PhotoGroup {
 private:
   std::vector<Photo*> _photos;
-
+  std::string _name;
+  
+  
 public:
+  PhotoGroup(const char* name);
+  
   /* Adds a photo, returns its ID number */
   int AddPhoto(Photo*);
 
@@ -28,6 +32,9 @@ public:
   /* Get the photo count */
   int GetPhotoCount();
 
+  /* Get/set the group name */
+  void SetName(const char* name);
+  char* GetName();
 
   /* Get the photo from a directory
      TODO: Maybe take this function out of here */
