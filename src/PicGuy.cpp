@@ -317,16 +317,22 @@ static void gapp_tree_rowactivated(GtkTreeView* treeView, GtkTreePath* path,
       Photo* photo = it_photo->second.item.photo;
       Pixel* p = photo->GetRawData();
       if (p){
-
         int has_alpha = (photo->GetBitDepth() >= 32) ? TRUE : FALSE;
+        int width, height, stride;
+        width =   photo->GetWidth();
+        height = photo->GetHeight();
+        stride = (has_alpha == TRUE) ?
+            photo->GetWidth() * 4 : photo->GetWidth() * 3;
+
           GdkPixbuf* gpb = gdk_pixbuf_new_from_data((guchar*) p,
           GDK_COLORSPACE_RGB, has_alpha, 8,
-          photo->GetWidth(),
-          photo->GetHeight(),
-          (has_alpha == TRUE) ? photo->GetWidth() * 4 : photo->GetWidth() * 3,
-          NULL, NULL);
+          width, height, stride, NULL, NULL);
 
-        gtk_image_set_from_pixbuf(GTK_IMAGE(widgets.imgPreview), gpb);
+          /* Create a pixbuf smaller, so larger images can fit on the window */
+          GdkPixbuf* gpb_thumb = gdk_pixbuf_scale_simple(gpb,
+            600, (int)600*((height*1.0)/width), GDK_INTERP_BILINEAR);
+
+        gtk_image_set_from_pixbuf(GTK_IMAGE(widgets.imgPreview), gpb_thumb);
 
       }
 
