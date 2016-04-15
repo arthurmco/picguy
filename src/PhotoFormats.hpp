@@ -1,7 +1,7 @@
 /* PhotoFormats.hpp
    Class to register and get an appropriate format for your file
 
-   Copyright (C) 2016 - Arthur M 
+   Copyright (C) 2016 - Arthur M
 */
 
 #ifndef PHOTOFORMATS_HPP
@@ -19,25 +19,22 @@ class PhotoFormats {
 private:
 
   /* The integer is a index on the extension list */
-  std::map<int/*extension*/,Photo*/*format*/> _formats;
+  std::map<int/*extension*/, Photo* /*format*/> _formats;
 
   /* The extension list */
   std::vector<char*> _extensions;
-  
+
 public:
   PhotoFormats();
-  
+
   void RegisterFormat(char* extension, Photo* format);
   void UnregisterFormat(char* extension);
 
   /* Get a format. Return NULL if it does not exist */
   Photo* GetFormat(char* extension);
 
-  
+
 };
 
 
 #endif
-
-
-

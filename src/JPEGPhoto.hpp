@@ -1,7 +1,7 @@
 /* JPEGPhoto.hpp
    Class that handles JPEG images
 
-   Copyright (C) 2016 - Arthur M 
+   Copyright (C) 2016 - Arthur M
 */
 
 
@@ -21,7 +21,7 @@
 //libjpeg header
 
 extern "C" {
- #include <jpeglib.h> 
+ #include <jpeglib.h>
 }
 
 class JPEGPhoto : public Photo {
@@ -30,24 +30,27 @@ private:
 
   struct jpeg_decompress_struct cinfo;
   struct jpeg_error_mgr jerr;
+
+  Pixel* _pixel = NULL;
+  int _width, _height, _bit_depth;
 public:
   JPEGPhoto() : Photo() {};
 
   /* Copy constructor mandated by PhotoFormats */
   Photo* Clone() override {return new JPEGPhoto;}
-  
+
   /* Opens a file. Returns true on success, false on failure.
      You have to use the method SetName() to set the file name. */
   bool Open() override;
-  
+
   int GetWidth() override;
   int GetHeight() override;
   int GetBitDepth() override;
 
   /* Returns file size, in bytes */
   long GetSize() override;
-  
-Pixel* GetRawData();
+
+  Pixel* GetRawData() override;
 
   ~JPEGPhoto();
 };

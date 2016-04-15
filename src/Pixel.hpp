@@ -1,14 +1,19 @@
 /* Pixel.hpp
    Pixel control and conversion routines
 
-   Copyright (C) 2016 - Arthur M 
+   Copyright (C) 2016 - Arthur M
 */
 
 
 #ifndef PIXEL_HPP
 #define PIXEL_HPP
 
+
+typedef char Pixel;
+
 /* Pixel, in RGB format */
+
+/*
 union Pixel {
   unsigned data:24;
   struct {
@@ -17,9 +22,9 @@ union Pixel {
   struct {
     char b,g,r;
   } channels_bgr;
-};
+} __attribute__((packed));
 
-/* Pixel, in RGBA format */
+/* Pixel, in RGBA format
 union PixelAlpha {
   int data;
   struct {
@@ -29,7 +34,7 @@ union PixelAlpha {
     char b,g,r,a;
   } channels_bgra;
 };
-
+*/
 
 
 

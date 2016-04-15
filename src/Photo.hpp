@@ -42,7 +42,7 @@ public:
   
   int GetID();
   
-  Pixel* GetRawData();
+  virtual Pixel* GetRawData(){return NULL;}
   
 };
 
