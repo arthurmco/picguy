@@ -8,33 +8,48 @@
 #ifndef PIXEL_HPP
 #define PIXEL_HPP
 
+/* Basic structure for pixel */
+struct Pixel {
+    unsigned char R, G, B;
+    Pixel() {
+      R = 0;
+      G = 0;
+      B = 0;
+    }
 
-typedef char Pixel;
+    Pixel(unsigned char r, unsigned char g, unsigned char b) {
+      R = r;
+      G = g;
+      B = b;
+    }
 
-/* Pixel, in RGB format */
+    unsigned char GetR() {return R;}
+    unsigned char GetG() {return G;}
+    unsigned char GetB() {return B;}
 
-/*
-union Pixel {
-  unsigned data:24;
-  struct {
-    char r,g,b;
-  } channels_rgb;
-  struct {
-    char b,g,r;
-  } channels_bgr;
-} __attribute__((packed));
-
-/* Pixel, in RGBA format
-union PixelAlpha {
-  int data;
-  struct {
-    char r,g,b,a;
-  } channels_rgba;
-  struct {
-    char b,g,r,a;
-  } channels_bgra;
 };
-*/
+
+/* Basic structure for pixels with an alpha-channel */
+struct PixelAlpha : public Pixel {
+    unsigned char R, G, B, A;
+    PixelAlpha(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
+      : Pixel(r,g,b)
+    {
+        A = a;
+    }
+
+    PixelAlpha()
+    : Pixel()
+    {
+      A = 0;
+    }
+
+    unsigned char GetR() {return R;}
+    unsigned char GetG() {return G;}
+    unsigned char GetB() {return B;}
+    unsigned char GetA() {return A;}
+
+};
 
 
 

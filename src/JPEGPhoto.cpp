@@ -63,8 +63,8 @@ Pixel* JPEGPhoto::GetRawData(){
   jpeg_start_decompress(&cinfo);
 
 
-  _pixel = new Pixel[_height * _width * (_bit_depth/8)];
-  Pixel* pxPos = new Pixel[ _width * (_bit_depth/8)];
+  _pixel = new Pixel[_height * _width];
+  Pixel* pxPos = new Pixel[ _width];
 
   int offset = 0;
   while (cinfo.output_scanline < cinfo.image_height){
@@ -74,11 +74,11 @@ Pixel* JPEGPhoto::GetRawData(){
     int lines = jpeg_read_scanlines(&cinfo, (JSAMPARRAY)&pxPos, 1);
 
     memcpy(_pixel + offset, pxPos, _width * (_bit_depth/8));
-    offset += (cinfo.image_width * cinfo.num_components);
+    offset += (cinfo.image_width);
 
 
   }
-  
+
   jpeg_finish_decompress(&cinfo);
   return _pixel;
 
