@@ -1,7 +1,7 @@
 /* PhotoGroup.hpp
    Manages groups of photos.
 
-   Copyright (C) 2016 - Arthur M 
+   Copyright (C) 2016 - Arthur M
 */
 
 
@@ -14,32 +14,44 @@
 
 class PhotoGroup {
 private:
+  PhotoGroup* _parent;
   std::vector<Photo*> _photos;
+  std::vector<PhotoGroup*> _groups;
+
   std::string _name;
-  
-  
+  int _id;
+
 public:
-  PhotoGroup(const char* name);
-  
+  PhotoGroup(const char* name, int id);
+
   /* Adds a photo, returns its ID number */
   int AddPhoto(Photo*);
+
+  /* Adds a group */
+  int AddPhotoGroup(PhotoGroup*);
 
   /* Removes the photo whose ID is 'id' */
   void RemovePhoto(int id);
 
   Photo* GetPhoto(int id);
-  
+
   /* Get the photo count */
   int GetPhotoCount();
 
   /* Get/set the group name */
   void SetName(const char* name);
-  char* GetName();
+  char* GetName() const;
+
+  /* Get the parent */
+  PhotoGroup* GetParent() const;
+
+  /* Get ID */
+  int GetID() const;
 
   /* Get the photo from a directory
      TODO: Maybe take this function out of here */
   static PhotoGroup* GetFromDirectory(const char* dirname);
-  
+
 
 };
 
