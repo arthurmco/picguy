@@ -68,9 +68,9 @@ Pixel* JPEGPhoto::GetRawData(){
 
   int offset = 0;
   while (cinfo.output_scanline < cinfo.image_height){
-    printf("Getting image (%d - %d) \n",
+    /*printf("Getting image (%d - %d) \n",
         cinfo.output_scanline,
-        cinfo.image_height);
+        cinfo.image_height); */
     int lines = jpeg_read_scanlines(&cinfo, (JSAMPARRAY)&pxPos, 1);
 
     memcpy(_pixel + offset, pxPos, _width * (_bit_depth/8));

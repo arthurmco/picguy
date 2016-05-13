@@ -17,10 +17,10 @@ int ThumbnailCache::Add(Photo* ph) {
   int width = ph->GetWidth();
   int height = ph->GetHeight();
 
-  int divisor = (width > height) ? width / DEFAULT_THUMBNAIL_SIZE : height / DEFAULT_THUMBNAIL_SIZE;
+  float divisor = (width > height) ? width / DEFAULT_THUMBNAIL_SIZE : height / DEFAULT_THUMBNAIL_SIZE;
 
-  int thumb_width = width / divisor;
-  int thumb_height = height / divisor;
+  int thumb_width = int(width / divisor);
+  int thumb_height = int(height / divisor);
   int has_alpha = (ph->GetBitDepth() >= 32) ? TRUE : FALSE;
   int stride = (has_alpha == TRUE) ?
       ph->GetWidth() * 4 : ph->GetWidth() * 3;
@@ -39,7 +39,7 @@ int ThumbnailCache::Add(Photo* ph) {
 
   int id = ph->GetID();
 
-  //g_object_unref(pb);
+  g_object_unref(pb);
   cache_entries[id] = t;
 
   return id;
