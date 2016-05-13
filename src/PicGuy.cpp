@@ -16,6 +16,8 @@
 #include "JPEGPhoto.hpp"
 #include "PNGPhoto.hpp"
 
+#include "ThumbnailCache.hpp"
+
 extern "C" {
 #include <gtk/gtk.h>
 }
@@ -48,6 +50,7 @@ struct PGWidgets {
 struct PGData {
   PhotoGroup* root_group;
   PhotoFormats* photo_formats;
+  ThumbnailCache* tc;
   int last_id = 0;
 } data;
 
@@ -151,9 +154,15 @@ PhotoGroup* get_selected_group_item(GtkTreeIter* out_iter)
 
 void add_photo_to_list(Photo* photo, GdkPixbuf* thumbnail)
 {
+
+  /* Get only the file name */
+    std::string pname = std::string{photo->GetName()};
+    pname = pname.substr(pname.find_last_of('/')+1);
+
     GtkTreeIter iter;
     gtk_list_store_append(widgets.listModel, &iter);
-    gtk_list_store_set(widgets.listModel, &iter, 0, thumbnail, 1, photo->GetName(), -1);
+    gtk_list_store_set(widgets.listModel, &iter,
+        0, thumbnail, 1, pname.c_str(), -1);
 
 }
 
@@ -208,7 +217,11 @@ static void add_folder_activate(GtkWidget* item, gpointer user_data)
           }
 
           printf("\tFound %s, extension %s\n", name.c_str(), extension.c_str());
-          photo->SetName(name.c_str());
+          std::string fullpath = std::string{foldername};
+          fullpath.append("/");
+          fullpath.append(name);
+          photo->SetName(fullpath.c_str());
+
 
           group->AddPhoto(photo);
 
@@ -246,7 +259,14 @@ static void tree_groups_row_activated(GtkTreeView* tv, GtkTreePath* path,
     Photo* p;
 
     while (p = grp->GetNextPhoto()) {
-        add_photo_to_list(p, NULL);
+      /* Check if photo is on thumbnail, add it if it doesn't */
+      GdkPixbuf* pb; // = data.tc->GetByID(p->GetID());
+    //  if (!pb) {
+        data.tc->Add(p);
+        pb = data.tc->GetByID(p->GetID());
+      //}
+
+      add_photo_to_list(p, pb);
     }
 
 }
@@ -264,6 +284,8 @@ int main(int argc, char* argv[])
   data.photo_formats = new PhotoFormats{};
   data.photo_formats->RegisterFormat(".jpg", new JPEGPhoto{});
   data.photo_formats->RegisterFormat(".jpeg", new JPEGPhoto{});
+
+  data.tc = new ThumbnailCache{};
 
   status = g_application_run (G_APPLICATION (app), argc, argv);
   g_object_unref (app);
