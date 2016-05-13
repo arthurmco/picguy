@@ -23,11 +23,16 @@ extern "C" {
 #include <dirent.h>
 
 /* Interface helpers */
-void add_group_to_tree(GtkTreeView* tree, PhotoGroup* pg);
-PhotoGroup* get_selected_group_item();
+void add_group_to_tree(GtkTreeView* tree, PhotoGroup* pg, GtkTreeIter* parent);
+PhotoGroup* get_selected_group_item(GtkTreeIter* it);
+
+void add_photo_to_list(Photo* photo, GdkPixbuf* thumbnail);
 
 /* Callbacks */
 static void add_folder_activate(GtkWidget* item, gpointer data);
+static void tree_groups_row_activated(GtkTreeView* tv, GtkTreePath* path,
+    GtkTreeViewColumn* col, gpointer data);
+
 
 struct PGWidgets {
   GtkBuilder* gbuilder = nullptr;
@@ -35,10 +40,14 @@ struct PGWidgets {
 
   GtkWidget* treeGroups = nullptr;
   GtkTreeModel* treeModel = nullptr;
+
+  GtkWidget* listPhotos = nullptr;
+  GtkListStore* listModel = nullptr;
 } widgets;
 
 struct PGData {
   PhotoGroup* root_group;
+  PhotoFormats* photo_formats;
   int last_id = 0;
 } data;
 
@@ -56,8 +65,17 @@ static void app_activate(GtkApplication* app, gpointer user_data)
                                                    "text", 0,
                                                    NULL);
     gtk_tree_view_append_column (GTK_TREE_VIEW (widgets.treeGroups), column);
+    g_signal_connect(widgets.treeGroups, "row-activated",
+        G_CALLBACK(tree_groups_row_activated), NULL);
+
 
     widgets.treeModel = GTK_TREE_MODEL(gtk_builder_get_object(widgets.gbuilder, "lsTreeGroups"));
+
+    widgets.listPhotos = GTK_WIDGET(gtk_builder_get_object(widgets.gbuilder, "ivPhotos"));
+    gtk_icon_view_set_pixbuf_column (GTK_ICON_VIEW (widgets.listPhotos), 0);
+    gtk_icon_view_set_text_column (GTK_ICON_VIEW (widgets.listPhotos), 1);
+
+    widgets.listModel = GTK_LIST_STORE(gtk_builder_get_object(widgets.gbuilder, "lsPhotos"));
 
     if (!widgets.gWinMain) {
         fprintf(stderr, "Cannot load main window layout!");
@@ -76,9 +94,15 @@ static void app_activate(GtkApplication* app, gpointer user_data)
 
     gtk_window_maximize(GTK_WINDOW(widgets.gWinMain));
     gtk_widget_show_all(widgets.gWinMain);
+
+    GError* err;
+
+    if (err) {
+      printf("Error: %s\n", err->message);
+    }
 }
 
-void add_group_to_tree(GtkTreeView* tree, PhotoGroup* pg)
+void add_group_to_tree(GtkTreeView* tree, PhotoGroup* pg, GtkTreeIter* parent)
 {
   GtkTreeModel* model = widgets.treeModel;
 
@@ -89,17 +113,48 @@ void add_group_to_tree(GtkTreeView* tree, PhotoGroup* pg)
   GtkTreeStore* store = GTK_TREE_STORE(model);
 
   GtkTreeIter iter;
-  gtk_tree_store_append(store, &iter, NULL);
+  gtk_tree_store_append(store, &iter, parent);
   gtk_tree_store_set(store, &iter, 0, pg->GetName(), -1);
 
   printf(" created item for %s, ", pg->GetName());
 
 }
 
-PhotoGroup* get_selected_group_item()
+PhotoGroup* get_selected_group_item(GtkTreeIter* out_iter)
 {
   GtkTreeSelection* treeSel = gtk_tree_view_get_selection(GTK_TREE_VIEW(widgets.treeGroups));
+  GtkTreeIter it;
+
+  if (gtk_tree_selection_get_selected(treeSel,
+      &widgets.treeModel, &it) == TRUE) {
+        gchar* name;
+        gtk_tree_model_get(widgets.treeModel, &it, 0, &name, -1);
+
+        PhotoGroup* grp = data.root_group->GetPhotoGroup(name);
+        if (grp) {
+          fprintf(stderr, "Group found: %s (id %d)\n", grp->GetName(), grp->GetID());
+
+          if (out_iter)
+            *out_iter = it;
+
+          return grp;
+        }
+        fprintf(stderr, "Group not found for %s\n", name);
+
+  }
+
+  fprintf(stderr, "Not found\n");
   return nullptr;
+
+
+}
+
+void add_photo_to_list(Photo* photo, GdkPixbuf* thumbnail)
+{
+    GtkTreeIter iter;
+    gtk_list_store_append(widgets.listModel, &iter);
+    gtk_list_store_set(widgets.listModel, &iter, 0, thumbnail, 1, photo->GetName(), -1);
+
 }
 
 static void add_folder_activate(GtkWidget* item, gpointer user_data)
@@ -117,18 +172,83 @@ static void add_folder_activate(GtkWidget* item, gpointer user_data)
 
       PhotoGroup* group = new PhotoGroup{foldername, data.last_id++};
 
+      /* Retrieve all photos from that folder */
+      DIR* photo_dir = opendir(foldername);
+
+      if (!photo_dir) {
+          fprintf(stderr, "Unable to open directory %s\n", foldername);
+          return;
+      }
+
+      struct dirent* dentry;
+
+      while (dentry = readdir(photo_dir)) {
+          std::string name = std::string{dentry->d_name};
+          int ext_index = name.find_last_of('.');
+
+          /* Check file type. Do not add directories, nor hidden files */
+          if (dentry->d_name[0] == '.') {
+              continue; //Hidden file.
+          }
+
+          if (dentry->d_type == DT_DIR) {
+              continue; //DIrectory
+          }
+
+          std::string extension;
+
+          if (ext_index != std::string::npos)
+            extension = name.substr(ext_index);
+          else
+            extension = "";
+
+          Photo* photo;
+          if (!(photo = data.photo_formats->GetFormat(extension.c_str()))) {
+                continue; //Invalid extension.
+          }
+
+          printf("\tFound %s, extension %s\n", name.c_str(), extension.c_str());
+          photo->SetName(name.c_str());
+
+          group->AddPhoto(photo);
+
+      }
+
+      closedir(photo_dir);
+
       /* add folder */
-      PhotoGroup* parent_group = get_selected_group_item();
+      GtkTreeIter* folder = NULL;
+      PhotoGroup* parent_group = nullptr; //get_selected_group_item(folder);
       if (!parent_group)
         parent_group = data.root_group;
 
       parent_group->AddPhotoGroup(group);
 
-      add_group_to_tree(GTK_TREE_VIEW(widgets.treeGroups), group);
+      add_group_to_tree(GTK_TREE_VIEW(widgets.treeGroups), group, NULL);
 
       /* won't be needed anymore */
       gtk_widget_destroy(folderSelector);
     }
+}
+
+static void tree_groups_row_activated(GtkTreeView* tv, GtkTreePath* path,
+    GtkTreeViewColumn* col, gpointer user_data)
+{
+    fprintf(stderr, "\n >>> Row selected: ");
+    int idx = gtk_tree_path_get_indices(path)[0];
+    PhotoGroup* grp = data.root_group->GetPhotoGroupByIndex(idx);
+    fputs(grp->GetName(), stderr);
+
+    /* Fill the icon view with the photos */
+    gtk_list_store_clear(widgets.listModel);
+
+    grp->ResetPhotoIterator();
+    Photo* p;
+
+    while (p = grp->GetNextPhoto()) {
+        add_photo_to_list(p, NULL);
+    }
+
 }
 
 int main(int argc, char* argv[])
@@ -140,6 +260,10 @@ int main(int argc, char* argv[])
      as soon as we can handle them */
   app = gtk_application_new("com.arthurmco.picguy", G_APPLICATION_FLAGS_NONE);
   g_signal_connect (app, "activate", G_CALLBACK (app_activate), NULL);
+
+  data.photo_formats = new PhotoFormats{};
+  data.photo_formats->RegisterFormat(".jpg", new JPEGPhoto{});
+  data.photo_formats->RegisterFormat(".jpeg", new JPEGPhoto{});
 
   status = g_application_run (G_APPLICATION (app), argc, argv);
   g_object_unref (app);

@@ -35,6 +35,9 @@ public:
 
   Photo* GetPhoto(int id);
 
+  PhotoGroup* GetPhotoGroup(const char* name);
+  PhotoGroup* GetPhotoGroupByIndex(int idx);
+
   /* Get the photo count */
   int GetPhotoCount();
 
@@ -52,6 +55,9 @@ public:
      TODO: Maybe take this function out of here */
   static PhotoGroup* GetFromDirectory(const char* dirname);
 
+  /* Photo group iteration functions */
+  void ResetPhotoIterator();
+  Photo* GetNextPhoto();
 
 };
 

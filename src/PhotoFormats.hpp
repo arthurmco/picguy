@@ -31,7 +31,7 @@ public:
   void UnregisterFormat(char* extension);
 
   /* Get a format. Return NULL if it does not exist */
-  Photo* GetFormat(char* extension);
+  Photo* GetFormat(const char* extension);
 
 
 };

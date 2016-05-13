@@ -24,11 +24,11 @@ void PhotoFormats::UnregisterFormat(char* extension){
 
 /* Get a format. Return false if it does not exist.
    Return true if it exists and put the format on fmt*/
-Photo* PhotoFormats::GetFormat(char* extension){
-  if (!extension){
-    extension = "\0";
-  }
-  
+Photo* PhotoFormats::GetFormat(const char* extension){
+  // if (!extension){
+  //   extension = "\0";
+  // }
+
   try {
     int extindex = 0;
     for (auto it = _extensions.begin(); it != _extensions.end(); it++){

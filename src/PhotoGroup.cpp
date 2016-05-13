@@ -34,6 +34,27 @@ void PhotoGroup::RemovePhoto(int id){
 
 }
 
+PhotoGroup* PhotoGroup::GetPhotoGroupByIndex(int idx)
+{
+  return _groups[idx];
+}
+
+
+PhotoGroup* PhotoGroup::GetPhotoGroup(const char* name)
+{
+  for (auto it = _groups.begin();
+       it != _groups.end();
+       it++){
+
+    if (!strcmp(name, (*it)->_name.c_str())) {
+      return (*it);
+    }
+  }
+
+  return nullptr;
+}
+
+
 /* Get the photo count */
 int PhotoGroup::GetPhotoCount(){
   return _photos.size();
@@ -63,6 +84,21 @@ PhotoGroup* PhotoGroup::GetParent() const { return _parent; }
 
 /* Get the ID */
 int PhotoGroup::GetID() const { return _id; }
+
+std::vector<Photo*>::iterator it;
+
+/* Photo group iteration functions */
+void PhotoGroup::ResetPhotoIterator() {
+  it = _photos.begin();
+}
+Photo* PhotoGroup::GetNextPhoto() {
+  if (it == _photos.end()) {
+    this->ResetPhotoIterator();
+    return nullptr;
+  }
+
+  return *it++;
+}
 
 
 /* Get the photo from a directory
