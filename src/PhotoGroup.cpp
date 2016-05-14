@@ -72,6 +72,10 @@ Photo* PhotoGroup::GetPhoto(int id){
 
 }
 
+Photo* PhotoGroup::GetPhotoByIndex(int index) {
+  return _photos[index];
+}
+
 void PhotoGroup::SetName(const char* name){
   _name = std::string(name);
 }

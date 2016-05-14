@@ -29,7 +29,7 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <child>
-              <object class="GtkMenuItem">
+              <object class="GtkMenuItem" id="menuPhotos">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">_Photos</property>
@@ -163,7 +163,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkGrid">
+          <object class="GtkGrid" id="grdPhotos">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="margin_left">5</property>
@@ -179,6 +179,7 @@
                 <property name="margin_right">4</property>
                 <property name="model">lsTreeGroups</property>
                 <property name="rubber_banding">True</property>
+                <property name="activate_on_single_click">True</property>
                 <child internal-child="selection">
                   <object class="GtkTreeSelection"/>
                 </child>
@@ -211,12 +212,14 @@
         </child>
         <child>
           <object class="GtkExpander" id="expInfo">
+            <property name="visible">True</property>
             <property name="app_paintable">True</property>
             <property name="can_focus">True</property>
             <property name="margin_bottom">20</property>
             <property name="expanded">True</property>
             <child>
               <object class="GtkGrid" id="grdInfo">
+                <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="column_homogeneous">True</property>
                 <child>
@@ -239,6 +242,9 @@
                     <property name="can_focus">False</property>
                     <property name="halign">start</property>
                     <property name="label" translatable="yes">Image name</property>
+                    <attributes>
+                      <attribute name="weight" value="semibold"/>
+                    </attributes>
                   </object>
                   <packing>
                     <property name="left_attach">2</property>
@@ -287,6 +293,7 @@
             </child>
             <child type="label">
               <object class="GtkLabel">
+                <property name="name">lblExpander</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">Informations</property>

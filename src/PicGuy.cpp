@@ -34,6 +34,8 @@ void add_photo_to_list(Photo* photo, GdkPixbuf* thumbnail);
 static void add_folder_activate(GtkWidget* item, gpointer data);
 static void tree_groups_row_activated(GtkTreeView* tv, GtkTreePath* path,
     GtkTreeViewColumn* col, gpointer data);
+static void icon_images_row_activated(GtkIconView* icon, GtkTreePath* path,
+    gpointer userdata);
 
 
 struct PGWidgets {
@@ -45,6 +47,13 @@ struct PGWidgets {
 
   GtkWidget* listPhotos = nullptr;
   GtkListStore* listModel = nullptr;
+
+  GtkWidget* widExpInfo;
+  GtkWidget* widImage;
+  GtkWidget* widImageName;
+  GtkWidget* widImageArea;
+  GtkWidget* widImageSize;
+  GtkWidget* widImageMime;
 } widgets;
 
 struct PGData {
@@ -77,6 +86,8 @@ static void app_activate(GtkApplication* app, gpointer user_data)
     widgets.listPhotos = GTK_WIDGET(gtk_builder_get_object(widgets.gbuilder, "ivPhotos"));
     gtk_icon_view_set_pixbuf_column (GTK_ICON_VIEW (widgets.listPhotos), 0);
     gtk_icon_view_set_text_column (GTK_ICON_VIEW (widgets.listPhotos), 1);
+    g_signal_connect(widgets.listPhotos, "item-activated",
+        G_CALLBACK(icon_images_row_activated), NULL);
 
     widgets.listModel = GTK_LIST_STORE(gtk_builder_get_object(widgets.gbuilder, "lsPhotos"));
 
@@ -95,8 +106,24 @@ static void app_activate(GtkApplication* app, gpointer user_data)
     /* Initialize the data */
     data.root_group = new PhotoGroup{"Root", data.last_id++};
 
+    /* Get the information widgets */
+    widgets.widImage = GTK_WIDGET(
+        gtk_builder_get_object(widgets.gbuilder, "imgThumbnail"));
+    widgets.widImageName = GTK_WIDGET(
+        gtk_builder_get_object(widgets.gbuilder, "lblImageName"));
+    widgets.widImageArea = GTK_WIDGET(
+        gtk_builder_get_object(widgets.gbuilder, "lblImageArea"));
+    widgets.widImageSize = GTK_WIDGET(
+        gtk_builder_get_object(widgets.gbuilder, "lblImageSize"));
+    widgets.widImageMime = GTK_WIDGET(
+        gtk_builder_get_object(widgets.gbuilder, "lblImageType"));
+    widgets.widExpInfo = GTK_WIDGET(
+        gtk_builder_get_object(widgets.gbuilder, "expInfo"));
+
+
     gtk_window_maximize(GTK_WINDOW(widgets.gWinMain));
     gtk_widget_show_all(widgets.gWinMain);
+  //  gtk_widget_set_visible(widgets.widExpInfo, FALSE);
 
     GError* err;
 
@@ -268,6 +295,76 @@ static void tree_groups_row_activated(GtkTreeView* tv, GtkTreePath* path,
 
       add_photo_to_list(p, pb);
     }
+
+}
+
+static void icon_images_row_activated(GtkIconView* icon, GtkTreePath* path,
+    gpointer userdata)
+{
+  GdkPixbuf* gp = gtk_image_get_pixbuf (GTK_IMAGE(widgets.widImage));
+  if (gp) g_object_unref(gp);
+
+  gtk_widget_set_visible(widgets.widExpInfo, TRUE);
+
+  fprintf(stderr, "\n >>> Image selected: ");
+
+  if (!path) return;
+
+  int idx = gtk_tree_path_get_indices(path)[0];
+
+  PhotoGroup* grp = get_selected_group_item(NULL);
+  if (!grp) return;
+
+  Photo* photo = grp->GetPhotoByIndex(idx);
+  if (!photo) return;
+
+  puts(photo->GetName());
+
+  char msg_area[32];
+  char msg_size[32];
+  sprintf(msg_area, "Area: %d x %d", photo->GetWidth(), photo->GetHeight());
+
+  float unitcount = photo->GetSize();
+  const char* unitdata[] = {"bytes", "KB", "MB", "GB", "TB", "EB"};
+  int unitind = 0;
+
+  while (unitcount >= 1024.0f) {
+      unitcount /= 1024.0f;
+      unitind++;
+  }
+
+  sprintf(msg_size, "Size: %.3f %s", unitcount, unitdata[unitind]);
+
+  printf("\n\t %s", msg_area);
+  printf("\n\t %s\n", msg_size);
+
+  gtk_label_set_text(GTK_LABEL(widgets.widImageName), photo->GetName());
+  gtk_label_set_text(GTK_LABEL(widgets.widImageArea), msg_area);
+  gtk_label_set_text(GTK_LABEL(widgets.widImageSize), msg_size);
+
+  float divisor = (photo->GetWidth() > photo->GetHeight()) ?
+      photo->GetWidth() / 160.0 : photo->GetHeight() / 160.0;
+
+  /* Resize the image to fit into the widget in 'informations' expander */
+  Pixel* p = photo->GetRawData();
+
+  if (!p) return;
+
+  int thumb_width = int(photo->GetWidth() / divisor);
+  int thumb_height = int(photo->GetHeight() / divisor);
+  int has_alpha = (photo->GetBitDepth() >= 32) ? TRUE : FALSE;
+  int stride = (has_alpha == TRUE) ?
+      photo->GetWidth() * 4 : photo->GetWidth() * 3;
+
+  GdkPixbuf* pb = gdk_pixbuf_new_from_data((guchar*) p,
+    GDK_COLORSPACE_RGB, has_alpha, 8, photo->GetWidth(), photo->GetHeight(),
+    stride, NULL, NULL);
+
+  GdkPixbuf* pb_thumb = gdk_pixbuf_scale_simple(pb, thumb_width, thumb_height,
+    GDK_INTERP_BILINEAR);
+
+  g_object_unref(pb);
+  gtk_image_set_from_pixbuf(GTK_IMAGE(widgets.widImage), pb_thumb);
 
 }
 

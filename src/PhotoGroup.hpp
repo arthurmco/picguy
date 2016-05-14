@@ -34,6 +34,7 @@ public:
   void RemovePhoto(int id);
 
   Photo* GetPhoto(int id);
+  Photo* GetPhotoByIndex(int index);
 
   PhotoGroup* GetPhotoGroup(const char* name);
   PhotoGroup* GetPhotoGroupByIndex(int idx);
