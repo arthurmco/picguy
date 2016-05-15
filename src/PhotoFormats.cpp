@@ -43,3 +43,8 @@ Photo* PhotoFormats::GetFormat(const char* extension){
     return NULL;
   }
 }
+
+/* Retrieve all extensions supported */
+std::vector<char*> PhotoFormats::GetFormats() {
+  return _extensions;
+}

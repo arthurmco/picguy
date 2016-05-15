@@ -43,6 +43,7 @@ public:
      You have to use the method SetName() to set the file name. */
   bool Open() override;
 
+  const char* GetType() override { return "JPEG"; }
   int GetWidth() override;
   int GetHeight() override;
   int GetBitDepth() override;

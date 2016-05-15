@@ -221,6 +221,7 @@
               <object class="GtkGrid" id="grdInfo">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="valign">start</property>
                 <property name="column_homogeneous">True</property>
                 <child>
                   <object class="GtkImage" id="imgThumbnail">
@@ -241,6 +242,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="halign">start</property>
+                    <property name="valign">start</property>
                     <property name="label" translatable="yes">Image name</property>
                     <attributes>
                       <attribute name="weight" value="semibold"/>
@@ -257,6 +259,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="halign">start</property>
+                    <property name="valign">start</property>
                     <property name="label" translatable="yes">Image area (1x1)</property>
                   </object>
                   <packing>
@@ -269,6 +272,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="halign">start</property>
+                    <property name="valign">start</property>
                     <property name="label" translatable="yes">Image size (1 kB)</property>
                   </object>
                   <packing>
@@ -281,6 +285,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="halign">start</property>
+                    <property name="valign">start</property>
                     <property name="label" translatable="yes">Type (image/type)</property>
                   </object>
                   <packing>

@@ -29,9 +29,11 @@ void add_group_to_tree(GtkTreeView* tree, PhotoGroup* pg, GtkTreeIter* parent);
 PhotoGroup* get_selected_group_item(GtkTreeIter* it);
 
 void add_photo_to_list(Photo* photo, GdkPixbuf* thumbnail);
+void fill_list_with_photos(PhotoGroup* grp);
 
 /* Callbacks */
 static void add_folder_activate(GtkWidget* item, gpointer data);
+static void add_photo_activate(GtkWidget* item, gpointer data);
 static void tree_groups_row_activated(GtkTreeView* tv, GtkTreePath* path,
     GtkTreeViewColumn* col, gpointer data);
 static void icon_images_row_activated(GtkIconView* icon, GtkTreePath* path,
@@ -102,6 +104,11 @@ static void app_activate(GtkApplication* app, gpointer user_data)
         gtk_builder_get_object(widgets.gbuilder, "itemAddFolder"));
     g_signal_connect(gmAddFolder, "activate",
         G_CALLBACK(add_folder_activate), NULL);
+
+    GtkWidget* gmAddPhoto = GTK_WIDGET(
+        gtk_builder_get_object(widgets.gbuilder, "itemAddPhoto"));
+    g_signal_connect(gmAddPhoto, "activate",
+        G_CALLBACK(add_photo_activate), NULL);
 
     /* Initialize the data */
     data.root_group = new PhotoGroup{"Root", data.last_id++};
@@ -271,31 +278,35 @@ static void add_folder_activate(GtkWidget* item, gpointer user_data)
     }
 }
 
+void fill_list_with_photos(PhotoGroup* grp)
+{
+  fputs(grp->GetName(), stderr);
+
+  /* Fill the icon view with the photos */
+  gtk_list_store_clear(widgets.listModel);
+
+  grp->ResetPhotoIterator();
+  Photo* p;
+
+  while (p = grp->GetNextPhoto()) {
+    /* Check if photo is on thumbnail, add it if it doesn't */
+    GdkPixbuf* pb; // = data.tc->GetByID(p->GetID());
+  //  if (!pb) {
+      data.tc->Add(p);
+      pb = data.tc->GetByID(p->GetID());
+    //}
+
+    add_photo_to_list(p, pb);
+  }
+}
+
 static void tree_groups_row_activated(GtkTreeView* tv, GtkTreePath* path,
     GtkTreeViewColumn* col, gpointer user_data)
 {
     fprintf(stderr, "\n >>> Row selected: ");
     int idx = gtk_tree_path_get_indices(path)[0];
     PhotoGroup* grp = data.root_group->GetPhotoGroupByIndex(idx);
-    fputs(grp->GetName(), stderr);
-
-    /* Fill the icon view with the photos */
-    gtk_list_store_clear(widgets.listModel);
-
-    grp->ResetPhotoIterator();
-    Photo* p;
-
-    while (p = grp->GetNextPhoto()) {
-      /* Check if photo is on thumbnail, add it if it doesn't */
-      GdkPixbuf* pb; // = data.tc->GetByID(p->GetID());
-    //  if (!pb) {
-        data.tc->Add(p);
-        pb = data.tc->GetByID(p->GetID());
-      //}
-
-      add_photo_to_list(p, pb);
-    }
-
+    fill_list_with_photos(grp);
 }
 
 static void icon_images_row_activated(GtkIconView* icon, GtkTreePath* path,
@@ -304,7 +315,7 @@ static void icon_images_row_activated(GtkIconView* icon, GtkTreePath* path,
   GdkPixbuf* gp = gtk_image_get_pixbuf (GTK_IMAGE(widgets.widImage));
   if (gp) g_object_unref(gp);
 
-  gtk_widget_set_visible(widgets.widExpInfo, TRUE);
+  //gtk_widget_set_visible(widgets.widExpInfo, TRUE);
 
   fprintf(stderr, "\n >>> Image selected: ");
 
@@ -366,6 +377,103 @@ static void icon_images_row_activated(GtkIconView* icon, GtkTreePath* path,
   g_object_unref(pb);
   gtk_image_set_from_pixbuf(GTK_IMAGE(widgets.widImage), pb_thumb);
 
+}
+
+static void add_photo_activate(GtkWidget* item, gpointer user_data) {
+  GtkWidget* dlgNewPhoto = gtk_file_chooser_dialog_new ("Add Photos",
+                                      GTK_WINDOW(widgets.gWinMain),
+                                      GTK_FILE_CHOOSER_ACTION_OPEN,
+                                      "_Cancel",
+                                      GTK_RESPONSE_CANCEL,
+                                      "_Add",
+                                      GTK_RESPONSE_ACCEPT,
+                                      NULL);
+
+  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(dlgNewPhoto), TRUE);
+
+  int index = 0;
+  std::vector<char*> fmts = data.photo_formats->GetFormats();
+
+  GtkFileFilter* ft_all = gtk_file_filter_new();
+  gtk_file_filter_set_name(ft_all, "All supported formats");
+  gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dlgNewPhoto), ft_all);
+
+  for (auto it = fmts.begin(); it != fmts.end(); ++it) {
+      GtkFileFilter* ft = gtk_file_filter_new();
+
+      char fmtname[30], fmtext[30];
+      sprintf(fmtext, "*%s", *it);
+      sprintf(fmtname, "%s files (%s)",
+        data.photo_formats->GetFormat(*it)->GetType(), fmtext);
+
+      gtk_file_filter_set_name(ft, fmtname);
+      gtk_file_filter_add_pattern(ft, fmtext);
+      gtk_file_filter_add_pattern(ft_all, fmtext);
+      gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dlgNewPhoto), ft);
+  }
+
+
+    gint res = gtk_dialog_run (GTK_DIALOG (dlgNewPhoto));
+    bool group_selected = true;
+
+    if (res == GTK_RESPONSE_ACCEPT) {
+      /* Get the selected group, or create one */
+      PhotoGroup* pg = get_selected_group_item(NULL);
+      if (!pg) {
+        group_selected = false;
+        pg = new PhotoGroup{"Images", data.last_id++};
+        add_group_to_tree(GTK_TREE_VIEW(widgets.treeGroups), pg, NULL);
+      }
+
+      /* Get all the files, try to open them and add them */
+      GSList* files = gtk_file_chooser_get_filenames(
+        GTK_FILE_CHOOSER(dlgNewPhoto));
+
+      GSList* file_next = files;
+
+
+      do {
+          gchar* fname = (gchar*) file_next->data;
+          printf("\nAdding %s", fname);
+
+          std::string name = std::string{fname};
+          int ext_index = name.find_last_of('.');
+
+          std::string extension;
+
+          if (ext_index != std::string::npos)
+            extension = name.substr(ext_index);
+          else
+            extension = "";
+
+          Photo* photo = data.photo_formats->GetFormat(extension.c_str());
+
+          if (!photo) {
+            //Not compatible (weird);
+            g_warning("%s isn't supported (weird)", fname);
+            continue;
+          }
+
+          photo->SetName(name.c_str());
+          if (!photo->Open()) {
+            //Opening error.
+            g_warning("%s couldn't be opened", name.c_str());
+            continue;
+          }
+
+          //Add photo
+          pg->AddPhoto(photo);
+      } while (file_next = g_slist_next(file_next));
+
+      data.root_group->AddPhotoGroup(pg);
+      if (group_selected) {
+        /* Update group view */
+        fill_list_with_photos(pg);
+
+      }
+    }
+
+    gtk_widget_destroy (dlgNewPhoto);
 }
 
 int main(int argc, char* argv[])

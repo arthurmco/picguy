@@ -33,7 +33,8 @@ public:
   /* Get a format. Return NULL if it does not exist */
   Photo* GetFormat(const char* extension);
 
-
+  /* Retrieve all extensions supported */
+  std::vector<char*> GetFormats();
 };
 
 
