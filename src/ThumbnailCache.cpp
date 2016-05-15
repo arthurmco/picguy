@@ -6,7 +6,13 @@ int ThumbnailCache::Add(Photo* ph) {
       return -1;
   }
 
-  Pixel* pixel = ph->GetRawData();
+  Pixel* pixel;
+  try {
+    pixel = ph->GetRawData();
+  } catch (std::runtime_error& exc) {
+    g_warning("Error while opening %s: %s", ph->GetName(), exc.what());
+    return -1;
+  }
 
   if (!pixel) {
     return -1;

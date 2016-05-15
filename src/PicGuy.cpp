@@ -344,6 +344,29 @@ static void icon_images_row_activated(GtkIconView* icon, GtkTreePath* path,
       unitind++;
   }
 
+
+  /* Resize the image to fit into the widget in 'informations' expander */
+  Pixel* p;
+
+  try {
+    p = photo->GetRawData();
+  } catch (std::runtime_error& exc) {
+    g_warning("Error while opening %s: %s", photo->GetName(), exc.what());
+    GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT;
+    GtkWidget* dialog = gtk_message_dialog_new (GTK_WINDOW(widgets.gWinMain),
+                                 flags,
+                                 GTK_MESSAGE_ERROR,
+                                 GTK_BUTTONS_OK,
+                                 "Error reading “%s”: %s",
+                                 photo->GetName(),
+                                 exc.what());
+    gtk_dialog_run (GTK_DIALOG (dialog));
+    gtk_widget_destroy (dialog);
+    return;
+  }
+
+  if (!p) return;
+
   sprintf(msg_size, "Size: %.3f %s", unitcount, unitdata[unitind]);
 
   printf("\n\t %s", msg_area);
@@ -356,11 +379,6 @@ static void icon_images_row_activated(GtkIconView* icon, GtkTreePath* path,
 
   float divisor = (photo->GetWidth() > photo->GetHeight()) ?
       photo->GetWidth() / 160.0 : photo->GetHeight() / 160.0;
-
-  /* Resize the image to fit into the widget in 'informations' expander */
-  Pixel* p = photo->GetRawData();
-
-  if (!p) return;
 
   int thumb_width = int(photo->GetWidth() / divisor);
   int thumb_height = int(photo->GetHeight() / divisor);

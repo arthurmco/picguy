@@ -3,7 +3,7 @@
 static int lastid = 0;
 
 Photo::Photo(){
-  /* Get an ID */
+  /* Get an ID */;
   _id = lastid++;
 }
 

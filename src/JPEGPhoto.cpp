@@ -1,5 +1,7 @@
 #include "JPEGPhoto.hpp"
 bool JPEGPhoto::Open() {
+  _width = 0;
+  _height = 0;
   //Close if it left some fd open
   if (photo_f != NULL)
     fclose(photo_f);

@@ -1,6 +1,10 @@
 #include "PNGPhoto.hpp"
 
 bool PNGPhoto::Open() {
+
+  _width = 0;
+  _height = 0;
+
   if (f_PNG)
     fclose(f_PNG);
 
