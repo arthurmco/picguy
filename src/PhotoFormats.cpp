@@ -5,8 +5,8 @@ PhotoFormats::PhotoFormats(){
   _formats = std::map<int, Photo*>();
 }
 
-void PhotoFormats::RegisterFormat(char* extension, Photo* format){
-  _extensions.push_back(extension);
+void PhotoFormats::RegisterFormat(const char* extension, Photo* format){
+  _extensions.push_back(const_cast<char*>(extension));
   _formats.emplace(_extensions.size()-1, format);
 }
 void PhotoFormats::UnregisterFormat(char* extension){

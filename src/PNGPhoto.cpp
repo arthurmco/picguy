@@ -11,7 +11,7 @@ bool PNGPhoto::Open() {
 
   unsigned char header[8];
   fread(&header, 8, 1, f_PNG);
-  
+
   //Verify PNG signature
   if (png_sig_cmp(header, 0, 8)){
     return false;
@@ -20,6 +20,10 @@ bool PNGPhoto::Open() {
   _pngstr =
     png_create_read_struct(PNG_LIBPNG_VER_STRING,
 			   NULL, NULL, NULL);
+
+  /* Prepare jmpbuf */
+  if (setjmp(png_jmpbuf(_pngstr)))
+     return false;
 
   if (!_pngstr)
     return false; //PNG struct creation error.
@@ -41,12 +45,12 @@ bool PNGPhoto::Open() {
 
   _width = png_get_image_width(_pngstr, _pnginfo);
   _height = png_get_image_height(_pngstr, _pnginfo);
-  _bitdepth = png_get_bit_depth(_pngstr, _pnginfo); 
+  _bitdepth = png_get_bit_depth(_pngstr, _pnginfo);
 
   int colortype = png_get_color_type(_pngstr, _pnginfo);
 
   switch (colortype){
-  case PNG_COLOR_TYPE_PALETTE: //Using a palette. 
+  case PNG_COLOR_TYPE_PALETTE: //Using a palette.
   case PNG_COLOR_TYPE_GRAY: //Grayscale channel. 1 color attribute/pixel
     _bitdepth *= 1;
     break;
@@ -61,18 +65,55 @@ bool PNGPhoto::Open() {
 
   case PNG_COLOR_TYPE_RGB_ALPHA: //RGBA. 4 attrib/pixel
     _bitdepth *= 4;
-    break;   
+    break;
   }
+
+  _data = nullptr;
 
   return true;
 }
-  
+
 int PNGPhoto::GetWidth() { return _width; }
 int PNGPhoto::GetHeight() { return _height; }
 int PNGPhoto::GetBitDepth() { return _bitdepth;}
 
 Pixel* PNGPhoto::GetRawData() {
-  return NULL;
+  if (_width == 0 || _height == 0) return nullptr;
+
+  if (_data) return _data;
+
+  /* Prepare jmpbuf */
+  if (setjmp(png_jmpbuf(_pngstr)))
+      return nullptr;
+
+  /* Get the image in PNG way */
+  png_bytep* row_ptrs = (png_bytep*) malloc(sizeof(png_bytep) * _height);
+
+  for (int i = 0; i < _height; i++)
+    row_ptrs[i] = (png_byte*) malloc(png_get_rowbytes(_pngstr, _pnginfo));
+
+  png_read_image(_pngstr, row_ptrs);
+
+  /* Convert it to Pixel way */
+  int stride = _bitdepth/8;
+
+  /* TODO: Extract the full 32-bit colors and convert later */
+  _bitdepth = 24;
+
+  _data = new Pixel[_width * _height];
+  char** rows = (char**)row_ptrs;
+  for (int y = 0; y < _height; y++) {
+       for (int x = 0; x < _width; x++) {
+        _data[y*_width+x].R = rows[y][x*stride+0];
+        _data[y*_width+x].G = rows[y][x*stride+1];
+        _data[y*_width+x].B = rows[y][x*stride+2];
+
+      }
+
+  }
+
+  return _data;
+
 }
 
 /* Returns file size, in bytes */
@@ -85,9 +126,9 @@ long PNGPhoto::GetSize(){
 
   struct stat st;
   fstat(fd, &st);
-		
+
   long size = st.st_size;
-  
+
   close(fd);
 
   return size;
@@ -101,7 +142,7 @@ PNGPhoto::~PNGPhoto(){
 			    &_pnginfo,
 			    (png_infopp)NULL);
 
-  
+
   if (f_PNG)
     fclose(f_PNG);
 }

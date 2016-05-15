@@ -2,7 +2,7 @@
 /* PNGPhoto.hpp
    Class that handles PNG images
 
-   Copyright (C) 2016 - Arthur M 
+   Copyright (C) 2016 - Arthur M
 */
 
 
@@ -31,19 +31,20 @@ private:
 public:
 
   PNGPhoto() : Photo() {};
-  
+
   /* Copy constructor mandated by PhotoFormats */
   Photo* Clone() override {return new PNGPhoto;}
-  
+
   /* Opens a file. Returns true on success, false on failure.
      You have to use the method SetName() to set the file name. */
   bool Open() override;
-  
+
   int GetWidth() override;
   int GetHeight() override;
   int GetBitDepth() override;
+  const char* GetType() override { return "PNG"; }
   long GetSize() override;
-  
+
 Pixel* GetRawData();
 
   ~PNGPhoto();

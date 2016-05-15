@@ -27,7 +27,7 @@ private:
 public:
   PhotoFormats();
 
-  void RegisterFormat(char* extension, Photo* format);
+  void RegisterFormat(const char* extension, Photo* format);
   void UnregisterFormat(char* extension);
 
   /* Get a format. Return NULL if it does not exist */

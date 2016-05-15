@@ -347,7 +347,8 @@ static void icon_images_row_activated(GtkIconView* icon, GtkTreePath* path,
   sprintf(msg_size, "Size: %.3f %s", unitcount, unitdata[unitind]);
 
   printf("\n\t %s", msg_area);
-  printf("\n\t %s\n", msg_size);
+  printf("\n\t %s", msg_size);
+  printf("\n\t %d bpp\n", photo->GetBitDepth());
 
   gtk_label_set_text(GTK_LABEL(widgets.widImageName), photo->GetName());
   gtk_label_set_text(GTK_LABEL(widgets.widImageArea), msg_area);
@@ -489,6 +490,7 @@ int main(int argc, char* argv[])
   data.photo_formats = new PhotoFormats{};
   data.photo_formats->RegisterFormat(".jpg", new JPEGPhoto{});
   data.photo_formats->RegisterFormat(".jpeg", new JPEGPhoto{});
+  data.photo_formats->RegisterFormat(".png", new PNGPhoto{});
 
   data.tc = new ThumbnailCache{};
 
