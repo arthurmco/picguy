@@ -256,6 +256,9 @@ static void add_folder_activate(GtkWidget* item, gpointer user_data)
           fullpath.append(name);
           photo->SetName(fullpath.c_str());
 
+          if (!photo->Open()) {
+              continue;
+          }
 
           group->AddPhoto(photo);
 

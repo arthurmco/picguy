@@ -1,6 +1,10 @@
 #include "ThumbnailCache.hpp"
 
 int ThumbnailCache::Add(Photo* ph) {
+  if (cache_entries.find(ph->GetID()) != cache_entries.end()) {
+      return ph->GetID();   // Already exists, return only ID.
+  }
+
   /* Open the image, resize it and put it in a GdkPixbuf */
   if (!ph->Open()) {
       return -1;
@@ -11,11 +15,20 @@ int ThumbnailCache::Add(Photo* ph) {
     pixel = ph->GetRawData();
   } catch (std::runtime_error& exc) {
     g_warning("Error while opening %s: %s", ph->GetName(), exc.what());
-    return -1;
+
+    pixel = nullptr;
   }
 
   if (!pixel) {
-    return -1;
+
+    ThumbnailData t;
+    t.photo = ph;
+    GtkWidget* w = gtk_image_new_from_icon_name ("gtk-missing-image", GTK_ICON_SIZE_LARGE_TOOLBAR);
+    t.pixbuf = gtk_image_get_pixbuf(GTK_IMAGE(w));
+    gtk_widget_destroy(w);
+    int id = ph->GetID();
+    cache_entries[id] = t;
+    return id;
   }
 
   printf("Creating thumbnail of %s (id %d) ", ph->GetName(), ph->GetID() );
