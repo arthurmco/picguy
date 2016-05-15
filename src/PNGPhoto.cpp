@@ -72,8 +72,6 @@ bool PNGPhoto::Open() {
     break;
   }
 
-  _data = nullptr;
-
   return true;
 }
 
@@ -85,6 +83,10 @@ Pixel* PNGPhoto::GetRawData() {
   if (_width == 0 || _height == 0) return nullptr;
 
   if (_data) return _data;
+
+  if (!f_PNG) {
+      if (!this->Open()) return nullptr;
+  }
 
   /* Prepare jmpbuf */
   if (setjmp(png_jmpbuf(_pngstr)))
@@ -116,6 +118,8 @@ Pixel* PNGPhoto::GetRawData() {
 
   }
 
+  fclose(f_PNG);
+  f_PNG = nullptr;
   return _data;
 
 }

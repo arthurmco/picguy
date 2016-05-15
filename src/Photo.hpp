@@ -45,6 +45,8 @@ public:
 
   virtual Pixel* GetRawData(){return NULL;}
 
+  /* Frees the memory occupied by the pixel raw data */
+  void FreeRawData();
 };
 
 #endif
