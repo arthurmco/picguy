@@ -132,7 +132,7 @@ static void app_activate(GtkApplication* app, gpointer user_data)
     gtk_widget_show_all(widgets.gWinMain);
   //  gtk_widget_set_visible(widgets.widExpInfo, FALSE);
 
-    GError* err;
+    GError* err = NULL;
 
     if (err) {
       printf("Error: %s\n", err->message);
