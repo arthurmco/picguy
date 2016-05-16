@@ -75,6 +75,18 @@ bool PNGPhoto::Open() {
   return true;
 }
 
+/* Close the file and free resources loaded by it*/
+void PNGPhoto::Close()
+{
+  if (_pnginfo)
+    png_destroy_read_struct(&_pngstr,
+          &_pnginfo,
+          (png_infopp)NULL);
+
+  fclose(f_PNG);
+  f_PNG = nullptr;
+}
+
 int PNGPhoto::GetWidth() { return _width; }
 int PNGPhoto::GetHeight() { return _height; }
 int PNGPhoto::GetBitDepth() { return _bitdepth;}
@@ -118,8 +130,6 @@ Pixel* PNGPhoto::GetRawData() {
 
   }
 
-  fclose(f_PNG);
-  f_PNG = nullptr;
   return _data;
 
 }

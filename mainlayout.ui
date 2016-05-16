@@ -128,7 +128,7 @@
                     <property name="rubber_banding">True</property>
                     <property name="activate_on_single_click">True</property>
                     <child internal-child="selection">
-                      <object class="GtkTreeSelection"/>
+                      <object class="GtkTreeSelection" id="s"/>
                     </child>
                   </object>
                 </child>

@@ -28,6 +28,9 @@ public:
      You have to use the method SetName() to set the file name. */
   virtual bool Open() {return false; }
 
+  /* Close the file and free resources loaded by it*/
+  virtual void Close(){return ;}
+
   const char* GetName();
   void SetName(const char*);
 

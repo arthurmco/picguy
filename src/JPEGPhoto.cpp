@@ -3,7 +3,7 @@ bool JPEGPhoto::Open() {
   _width = 0;
   _height = 0;
   //Close if it left some fd open
-  if (photo_f != NULL)
+  if (photo_f)
     fclose(photo_f);
 
   //Check image size.
@@ -50,6 +50,15 @@ bool JPEGPhoto::Open() {
      GetRawData() function */
 
   return true;
+}
+
+
+/* Close the file and free resources loaded by it*/
+void JPEGPhoto::Close()
+{
+  if (photo_f)
+    fclose(photo_f);
+  photo_f = nullptr;
 }
 
 int JPEGPhoto::GetWidth() {return _width;}

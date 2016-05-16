@@ -60,6 +60,7 @@ int ThumbnailCache::Add(Photo* ph) {
 
   g_object_unref(pb);
   ph->FreeRawData();
+  ph->Close();
 
   cache_entries[id] = t;
 

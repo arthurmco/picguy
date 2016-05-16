@@ -398,6 +398,7 @@ static void icon_images_row_activated(GtkIconView* icon, GtkTreePath* path,
 
   g_object_unref(pb);
   photo->FreeRawData();
+  photo->Close();
 
   gtk_image_set_from_pixbuf(GTK_IMAGE(widgets.widImage), pb_thumb);
 

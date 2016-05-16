@@ -39,6 +39,9 @@ public:
      You have to use the method SetName() to set the file name. */
   bool Open() override;
 
+  /* Close the file and free resources loaded by it*/
+  void Close() override;
+
   int GetWidth() override;
   int GetHeight() override;
   int GetBitDepth() override;
