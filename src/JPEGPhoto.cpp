@@ -89,8 +89,9 @@ Pixel* JPEGPhoto::GetRawData(){
 
 
   }
-
   jpeg_finish_decompress(&cinfo);
+
+  delete[] pxPos;
   return _pixel;
 
 }

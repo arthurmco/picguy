@@ -130,6 +130,13 @@ Pixel* PNGPhoto::GetRawData() {
 
   }
 
+  for (int i = 0; i < _height; i++)
+    free(row_ptrs[i]);
+
+  free(row_ptrs);
+
+
+
   return _data;
 
 }
