@@ -39,6 +39,7 @@ static void tree_groups_row_activated(GtkTreeView* tv, GtkTreePath* path,
 static void icon_images_row_activated(GtkIconView* icon, GtkTreePath* path,
     gpointer userdata);
 
+static void app_exit(GtkWidget* item, gpointer data);
 
 struct PGWidgets {
   GtkBuilder* gbuilder = nullptr;
@@ -64,6 +65,11 @@ struct PGData {
   ThumbnailCache* tc;
   int last_id = 0;
 } data;
+
+static void app_exit(GtkWidget* item, gpointer data) {
+      g_application_quit((GApplication*)data);
+}
+
 
 static void app_activate(GtkApplication* app, gpointer user_data)
 {
@@ -109,6 +115,11 @@ static void app_activate(GtkApplication* app, gpointer user_data)
         gtk_builder_get_object(widgets.gbuilder, "itemAddPhoto"));
     g_signal_connect(gmAddPhoto, "activate",
         G_CALLBACK(add_photo_activate), NULL);
+
+    GtkWidget* gmExit = GTK_WIDGET(
+        gtk_builder_get_object(widgets.gbuilder, "itemExit"));
+    g_signal_connect(gmExit, "activate",
+        G_CALLBACK(app_exit), app);
 
     /* Initialize the data */
     data.root_group = new PhotoGroup{"Root", data.last_id++};
@@ -520,6 +531,8 @@ int main(int argc, char* argv[])
 
   status = g_application_run (G_APPLICATION (app), argc, argv);
   g_object_unref (app);
+
+
 
   return status;
 }
