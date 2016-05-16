@@ -21,6 +21,8 @@ private:
   std::string _name;
   int _id;
 
+  std::vector<Photo*>::iterator it;
+  std::vector<PhotoGroup*>::iterator itg;
 public:
   PhotoGroup(const char* name, int id);
 
@@ -59,6 +61,10 @@ public:
   /* Photo group iteration functions */
   void ResetPhotoIterator();
   Photo* GetNextPhoto();
+
+  /* Photo group iteration functions */
+  void ResetGroupIterator();
+  PhotoGroup* GetNextGroup();
 
 };
 

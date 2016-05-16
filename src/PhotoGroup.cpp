@@ -89,9 +89,7 @@ PhotoGroup* PhotoGroup::GetParent() const { return _parent; }
 /* Get the ID */
 int PhotoGroup::GetID() const { return _id; }
 
-std::vector<Photo*>::iterator it;
-
-/* Photo group iteration functions */
+/* Photo group photo iteration functions */
 void PhotoGroup::ResetPhotoIterator() {
   it = _photos.begin();
 }
@@ -101,7 +99,25 @@ Photo* PhotoGroup::GetNextPhoto() {
     return nullptr;
   }
 
+  if (_photos.size() == 0) return nullptr;
+
   return *it++;
+}
+
+
+/* Photo group subgroup iteration functions */
+void PhotoGroup::ResetGroupIterator() {
+  itg = _groups.begin();
+}
+PhotoGroup* PhotoGroup::GetNextGroup() {
+  if (itg == _groups.end()) {
+    this->ResetGroupIterator();
+    return nullptr;
+  }
+
+  if (_groups.size() == 0) return nullptr;
+
+  return *itg++;
 }
 
 
