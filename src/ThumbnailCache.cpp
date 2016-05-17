@@ -37,6 +37,7 @@ int ThumbnailCache::Add(Photo* ph) {
   int height = ph->GetHeight();
 
   float divisor = (width > height) ? width / DEFAULT_THUMBNAIL_SIZE : height / DEFAULT_THUMBNAIL_SIZE;
+  
 
   int thumb_width = int(width / divisor);
   int thumb_height = int(height / divisor);

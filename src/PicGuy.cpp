@@ -153,7 +153,7 @@ static void app_activate(GtkApplication* app, gpointer user_data)
 
     gtk_window_maximize(GTK_WINDOW(widgets.gWinMain));
     gtk_widget_show_all(widgets.gWinMain);
-  //  gtk_widget_set_visible(widgets.widExpInfo, FALSE);
+    gtk_widget_set_visible(widgets.widExpInfo, FALSE);
 
     GError* err = NULL;
 
@@ -341,7 +341,7 @@ static void icon_images_row_activated(GtkIconView* icon, GtkTreePath* path,
   GdkPixbuf* gp = gtk_image_get_pixbuf (GTK_IMAGE(widgets.widImage));
   if (gp) g_object_unref(gp);
 
-  //gtk_widget_set_visible(widgets.widExpInfo, TRUE);
+  gtk_widget_set_visible(widgets.widExpInfo, TRUE);
 
   fprintf(stderr, "\n >>> Image selected: ");
 
