@@ -126,6 +126,15 @@ static void app_activate(GtkApplication* app, gpointer user_data)
 
     /* Initialize the data */
     data.root_group = new PhotoGroup{"Root", data.last_id++};
+    if (PhotoGroupSerializer::Open("picguy.list", data.root_group)) {
+        data.root_group->ResetGroupIterator();
+        PhotoGroup* pgroup;
+        while (pgroup = data.root_group->GetNextGroup())
+          add_group_to_tree(GTK_TREE_VIEW(widgets.treeGroups), pgroup, NULL);
+
+    } else {
+        g_warning("Couldn't read data from photo list file");
+    }
 
     /* Get the information widgets */
     widgets.widImage = GTK_WIDGET(
@@ -531,6 +540,7 @@ int main(int argc, char* argv[])
   data.photo_formats->RegisterFormat(".png", new PNGPhoto{});
 
   data.tc = new ThumbnailCache{};
+  PhotoGroupSerializer::SetFormatData(data.photo_formats);
 
   status = g_application_run (G_APPLICATION (app), argc, argv);
   g_object_unref (app);
