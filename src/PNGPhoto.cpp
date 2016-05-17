@@ -116,19 +116,39 @@ Pixel* PNGPhoto::GetRawData() {
   int stride = _bitdepth/8;
 
   /* TODO: Extract the full 32-bit colors and convert later */
-  _bitdepth = 24;
 
-  _data = new Pixel[_width * _height];
+
+  _data = new PixelAlpha[_width * _height];
+  PixelAlpha* _data32 = (PixelAlpha*)_data;
   char** rows = (char**)row_ptrs;
-  for (int y = 0; y < _height; y++) {
-       for (int x = 0; x < _width; x++) {
-        _data[y*_width+x].R = rows[y][x*stride+0];
-        _data[y*_width+x].G = rows[y][x*stride+1];
-        _data[y*_width+x].B = rows[y][x*stride+2];
 
-      }
+  if (_bitdepth >= 32) {
 
-  }
+    for (int y = 0; y < _height; y++) {
+         for (int x = 0; x < _width; x++) {
+          _data32[y*_width+x].R = rows[y][x*stride+0];
+          _data32[y*_width+x].G = rows[y][x*stride+1];
+          _data32[y*_width+x].B = rows[y][x*stride+2];
+          _data32[y*_width+x].A = rows[y][x*stride+3];
+
+          }
+        }
+
+    } else {
+      for (int y = 0; y < _height; y++) {
+         for (int x = 0; x < _width; x++) {
+          _data[y*_width+x].R = rows[y][x*stride+0];
+          _data[y*_width+x].G = rows[y][x*stride+1];
+          _data[y*_width+x].B = rows[y][x*stride+2];
+
+          }
+        }
+
+    }
+
+
+
+
 
   for (int i = 0; i < _height; i++)
     free(row_ptrs[i]);
