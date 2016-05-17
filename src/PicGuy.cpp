@@ -37,6 +37,8 @@ void fill_list_with_photos(PhotoGroup* grp);
 /* Callbacks */
 static void add_folder_activate(GtkWidget* item, gpointer data);
 static void add_photo_activate(GtkWidget* item, gpointer data);
+static void about_activate(GtkWidget* item, gpointer);
+
 static void tree_groups_row_activated(GtkTreeView* tv, GtkTreePath* path,
     GtkTreeViewColumn* col, gpointer data);
 static void icon_images_row_activated(GtkIconView* icon, GtkTreePath* path,
@@ -123,6 +125,11 @@ static void app_activate(GtkApplication* app, gpointer user_data)
         gtk_builder_get_object(widgets.gbuilder, "itemExit"));
     g_signal_connect(gmExit, "activate",
         G_CALLBACK(app_exit), app);
+
+    GtkWidget* gmAbout = GTK_WIDGET(
+        gtk_builder_get_object(widgets.gbuilder, "itemAbout"));
+    g_signal_connect(gmAbout, "activate",
+        G_CALLBACK(about_activate), app);
 
     /* Initialize the data */
     data.root_group = new PhotoGroup{"Root", data.last_id++};
@@ -522,6 +529,16 @@ static void add_photo_activate(GtkWidget* item, gpointer user_data) {
     }
 
     gtk_widget_destroy (dlgNewPhoto);
+}
+
+static void about_activate(GtkWidget* item, gpointer)
+{
+    gtk_show_about_dialog(GTK_WINDOW(widgets.gWinMain),
+      "program-name", "PicGuy",
+      "license-type", GTK_LICENSE_GPL_2_0_ONLY,
+      "version", "0.0.1",
+      NULL);
+
 }
 
 int main(int argc, char* argv[])
