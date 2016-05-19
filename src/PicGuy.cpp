@@ -400,7 +400,7 @@ static void icon_images_row_activated(GtkIconView* icon, GtkTreePath* path,
 
   if (!p) return;
 
-  sprintf(msg_size, "Size: %.3f %s", unitcount, unitdata[unitind]);
+  sprintf(msg_size, "Size: %.2f %s", unitcount, unitdata[unitind]);
 
   printf("\n\t %s", msg_area);
   printf("\n\t %s", msg_size);
@@ -457,7 +457,14 @@ static void add_photo_activate(GtkWidget* item, gpointer user_data) {
   for (auto it = fmts.begin(); it != fmts.end(); ++it) {
       GtkFileFilter* ft = gtk_file_filter_new();
 
-      char fmtname[30], fmtext[30];
+      char fmtname[30], fmtext[30], fmtextupper[30];
+
+      unsigned int cidx = 0;
+      for (cidx = 0; (*it)[cidx] != 0; cidx++) {
+        fmtextupper[cidx] = toupper((*it)[cidx]);
+      }
+      fmtextupper[cidx] = 0;
+
       sprintf(fmtext, "*%s", *it);
       sprintf(fmtname, "%s files (%s)",
         data.photo_formats->GetFormat(*it)->GetType(), fmtext);
@@ -465,6 +472,11 @@ static void add_photo_activate(GtkWidget* item, gpointer user_data) {
       gtk_file_filter_set_name(ft, fmtname);
       gtk_file_filter_add_pattern(ft, fmtext);
       gtk_file_filter_add_pattern(ft_all, fmtext);
+
+      sprintf(fmtext, "*%s", fmtextupper );
+      gtk_file_filter_add_pattern(ft, fmtext);
+      gtk_file_filter_add_pattern(ft_all, fmtext);
+
       gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dlgNewPhoto), ft);
   }
 

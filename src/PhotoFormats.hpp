@@ -10,6 +10,7 @@
 #include <map>
 #include <vector>
 #include <stdexcept> //out_of_range exception
+#include <locale>
 
 #include <cstring>
 
