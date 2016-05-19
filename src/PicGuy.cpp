@@ -409,6 +409,7 @@ static void icon_images_row_activated(GtkIconView* icon, GtkTreePath* path,
   gtk_label_set_text(GTK_LABEL(widgets.widImageName), photo->GetName());
   gtk_label_set_text(GTK_LABEL(widgets.widImageArea), msg_area);
   gtk_label_set_text(GTK_LABEL(widgets.widImageSize), msg_size);
+  gtk_label_set_text(GTK_LABEL(widgets.widImageMime), photo->GetType());
 
   float divisor = (photo->GetWidth() > photo->GetHeight()) ?
       photo->GetWidth() / 160.0 : photo->GetHeight() / 160.0;

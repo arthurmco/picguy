@@ -1,6 +1,8 @@
 PicGuy
 ==============
 
+![PicGuy logo](https://raw.githubusercontent.com/arthurmco/picguy/master/resources/icons/256x256/picguy-logo.png)
+
 # What is it?
 
 PicGuy is an open source photo administration software, like Shotwell and Picasa, that can do batch editing
