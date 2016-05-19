@@ -78,7 +78,7 @@ static void app_exit(GtkWidget* item, gpointer data) {
 
 static void app_activate(GtkApplication* app, gpointer user_data)
 {
-    widgets.gbuilder = gtk_builder_new_from_file("mainlayout.ui");
+    widgets.gbuilder = gtk_builder_new_from_file("resources/layout/mainlayout.ui");
     widgets.gWinMain = GTK_WIDGET(gtk_builder_get_object(widgets.gbuilder, "winMain"));
 
     widgets.treeGroups = GTK_WIDGET(gtk_builder_get_object(widgets.gbuilder, "tvGroups"));
@@ -533,12 +533,15 @@ static void add_photo_activate(GtkWidget* item, gpointer user_data) {
 
 static void about_activate(GtkWidget* item, gpointer)
 {
+    GdkPixbuf* logo = gdk_pixbuf_new_from_file(
+      "resources/icons/256x256/picguy-logo.png", NULL);
     gtk_show_about_dialog(GTK_WINDOW(widgets.gWinMain),
       "program-name", "PicGuy",
-      "license-type", GTK_LICENSE_GPL_2_0_ONLY,
+      "license-type", GTK_LICENSE_GPL_2_0,
+      "logo", logo,
       "version", "0.0.1",
       NULL);
-
+    g_object_unref(logo);
 }
 
 int main(int argc, char* argv[])

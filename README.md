@@ -20,7 +20,7 @@ in _multiple images_ at once.
 
 Will support JPEG, GIF, PNG, BMP and possibly TIFF and RAW images.
 
-It uses GTK 3.0 to build the graphical interface.
+It uses GTK 3 to build the graphical interface.
 
 # Dependencies
 
