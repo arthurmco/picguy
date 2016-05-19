@@ -9,7 +9,8 @@ CXXFLAGS=  -std=c++11 -g $(CLIBS)
 OUT=picguy
 
 all: PicGuy.o Photo.o JPEGPhoto.o PNGPhoto.o PhotoFormats.o PhotoGroup.o \
-	ThumbnailCache.o PhotoGroupSerializer.o
+	ThumbnailCache.o PhotoGroupSerializer.o PixelConverter.o \
+	PhotoOperationManager.o
 	$(CXX) $^ -o $(OUT) $(GTKFLAGS) $(CXXFLAGS) $(GTKLIBS)
 
 PhotoFormats.o: src/PhotoFormats.cpp src/PhotoFormats.hpp
@@ -30,9 +31,15 @@ PhotoGroup.o: src/PhotoGroup.cpp src/PhotoGroup.hpp
 PhotoGroupSerializer.o: src/PhotoGroupSerializer.cpp src/PhotoGroupSerializer.hpp
 	$(CXX) -o $@ -c $< $(CXXFLAGS)
 
-
 ThumbnailCache.o: src/ThumbnailCache.cpp src/ThumbnailCache.hpp
 	$(CXX) -o $@ -c $< $(GTKFLAGS) $(CXXFLAGS) $(GTKLIBS)
+
+PixelConverter.o: src/PixelConverter.cpp src/PixelConverter.hpp
+	$(CXX) -o $@ -c $< $(GTKFLAGS) $(CXXFLAGS) $(GTKLIBS)
+
+PhotoOperationManager.o: src/operations/PhotoOperationManager.cpp \
+	src/operations/PhotoOperationManager.hpp
+		$(CXX) -o $@ -c $< $(GTKFLAGS) $(CXXFLAGS) $(GTKLIBS)
 
 PicGuy.o: src/PicGuy.cpp
 	$(CXX) -o $@ -c $< $(GTKFLAGS) $(CXXFLAGS) $(GTKLIBS)

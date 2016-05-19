@@ -540,7 +540,7 @@ static void about_activate(GtkWidget* item, gpointer)
       "program-name", "PicGuy",
       "license-type", GTK_LICENSE_GPL_2_0,
       "logo", logo,
-      "version", "0.0.1",
+      "version", "0.0.2",
       NULL);
     g_object_unref(logo);
 }
