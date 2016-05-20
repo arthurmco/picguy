@@ -16,6 +16,7 @@
 #include "ThumbnailCache.hpp"
 #include "PhotoGroupSerializer.hpp"
 
+#include "operations/PhotoOperationManager.hpp"
 #include "operations/BlackAndWhiteOperation.hpp"
 
 extern "C" {
@@ -65,6 +66,7 @@ struct PGData {
   PhotoGroup* root_group;
   PhotoFormats* photo_formats;
   ThumbnailCache* tc;
+  PhotoOperationManager* pom;
   int last_id = 0;
 } data;
 
@@ -359,6 +361,8 @@ static void icon_images_row_activated(GtkIconView* icon, GtkTreePath* path,
   Photo* photo = grp->GetPhotoByIndex(idx);
   if (!photo) return;
 
+  //data.pom->Get("blacknwhite")->DoOperation(photo);
+
   puts(photo->GetName());
 
   char msg_area[32];
@@ -571,6 +575,9 @@ int main(int argc, char* argv[])
 
   data.tc = new ThumbnailCache{};
   PhotoGroupSerializer::SetFormatData(data.photo_formats);
+
+  data.pom = new PhotoOperationManager{};
+  data.pom->Add("blacknwhite", new BlackAndWhiteOperation{});
 
   status = g_application_run (G_APPLICATION (app), argc, argv);
   g_object_unref (app);
