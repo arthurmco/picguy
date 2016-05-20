@@ -16,11 +16,14 @@ class PhotoOperation {
 public:
   virtual const char* GetName() const {return "Unknown";}
 
+  /*  Show the window to setup the operation. Returns true if user press OK*/
+  virtual bool ShowWindow()=0;
+
   /* Do the operation. Returns true on success, false on failure.
      The photo is modified on the process, so if you want to preserve
      the original, you should copy it.
     */
-  virtual bool DoOperation(Photo* ph);
+  virtual bool DoOperation(Photo* ph)=0;
 
 };
 

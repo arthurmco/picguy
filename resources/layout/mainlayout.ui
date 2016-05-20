@@ -168,6 +168,7 @@
         </child>
         <child>
           <object class="GtkExpander" id="expInfo">
+            <property name="height_request">96</property>
             <property name="visible">True</property>
             <property name="app_paintable">True</property>
             <property name="can_focus">True</property>
@@ -175,15 +176,20 @@
             <property name="expanded">True</property>
             <child>
               <object class="GtkGrid" id="grdInfo">
+                <property name="height_request">80</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="valign">start</property>
+                <property name="orientation">vertical</property>
                 <property name="column_homogeneous">True</property>
                 <child>
                   <object class="GtkImage" id="imgThumbnail">
-                    <property name="height_request">96</property>
+                    <property name="width_request">64</property>
+                    <property name="height_request">64</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="halign">center</property>
+                    <property name="valign">center</property>
                     <property name="stock">gtk-dialog-warning</property>
                   </object>
                   <packing>
@@ -263,7 +269,7 @@
           </object>
           <packing>
             <property name="expand">False</property>
-            <property name="fill">True</property>
+            <property name="fill">False</property>
             <property name="position">2</property>
           </packing>
         </child>

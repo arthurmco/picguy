@@ -7,19 +7,16 @@
 #include <stdio.h>
 #include <stdlib.h> //exit()
 #include <string.h>
-
 #include <map>
 
 #include "PhotoFormats.hpp"
 #include "PhotoGroup.hpp"
-
 #include "JPEGPhoto.hpp"
 #include "PNGPhoto.hpp"
-
 #include "ThumbnailCache.hpp"
-
 #include "PhotoGroupSerializer.hpp"
 
+#include "operations/BlackAndWhiteOperation.hpp"
 
 extern "C" {
 #include <gtk/gtk.h>
