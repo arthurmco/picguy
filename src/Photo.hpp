@@ -21,6 +21,8 @@ protected:
 
     /* Thumbnail data container */
     PixelAlpha* _thumbnail = nullptr;
+    int _thumbW, _thumbH;
+
     std::string _name;
     int _id;
 
@@ -59,6 +61,7 @@ public:
 
   /* Gets a 128x128 thumbnail for use in icons */
   Pixel* GetThumbnail();
+  int GetThumbnailWidth();  int GetThumbnailHeight();
 };
 
 #endif
