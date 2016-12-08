@@ -140,7 +140,7 @@ Pixel* PNGPhoto::GetRawData() {
           _data[y*_width+x].R = rows[y][x*stride+0];
           _data[y*_width+x].G = rows[y][x*stride+1];
           _data[y*_width+x].B = rows[y][x*stride+2];
-
+          
           }
         }
 

@@ -12,11 +12,12 @@ int ThumbnailCache::Add(Photo* ph) {
 
   Pixel* pixel;
   try {
-    pixel = ph->GetRawData();
+    pixel = ph->GetThumbnail();
   } catch (std::runtime_error& exc) {
     g_warning("Error while opening %s: %s", ph->GetName(), exc.what());
 
     pixel = nullptr;
+    return 0;
   }
 
   if (!pixel) {
@@ -33,17 +34,17 @@ int ThumbnailCache::Add(Photo* ph) {
 
   printf("Creating thumbnail of %s (id %d) ", ph->GetName(), ph->GetID() );
 
-  int width = ph->GetWidth();
-  int height = ph->GetHeight();
+  int width = 128;// ph->GetWidth();
+  int height = 128;//ph->GetHeight();
 
   float divisor = (width > height) ? width / DEFAULT_THUMBNAIL_SIZE : height / DEFAULT_THUMBNAIL_SIZE;
-  
+
 
   int thumb_width = int(width / divisor);
   int thumb_height = int(height / divisor);
   int has_alpha = (ph->GetBitDepth() >= 32) ? TRUE : FALSE;
   int stride = (has_alpha == TRUE) ?
-      ph->GetWidth() * 4 : ph->GetWidth() * 3;
+      128 * 4 : 128 * 3;
 
   GdkPixbuf* pb = gdk_pixbuf_new_from_data((guchar*) pixel,
     GDK_COLORSPACE_RGB, has_alpha, 8, width, height, stride, NULL, NULL);

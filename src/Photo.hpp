@@ -9,12 +9,14 @@
 
 #include <string>
 #include <cstring>
+#include <cmath>
 
 #include "Pixel.hpp"
 
 class Photo {
 protected:
-  Pixel* _data;
+  Pixel* _data = nullptr;
+  PixelAlpha* _thumbnail = nullptr;
   std::string _name;
   int _id;
 
@@ -50,6 +52,9 @@ public:
 
   /* Frees the memory occupied by the pixel raw data */
   void FreeRawData();
+
+  /* Gets a 128x128 thumbnail for use in icons */
+  Pixel* GetThumbnail();
 };
 
 #endif

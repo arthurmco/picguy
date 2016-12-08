@@ -28,7 +28,7 @@ struct Pixel {
     unsigned char GetG() {return G;}
     unsigned char GetB() {return B;}
 
-};
+} __attribute__((packed));
 
 /* Basic structure for pixels with an alpha-channel */
 struct PixelAlpha : public Pixel {
@@ -56,7 +56,7 @@ struct PixelAlpha : public Pixel {
     unsigned char GetB() {return B;}
     unsigned char GetA() {return A;}
 
-};
+} __attribute__((packed));;
 
 
 
