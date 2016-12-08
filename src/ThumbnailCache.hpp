@@ -24,7 +24,7 @@ private:
   std::map<int /* id */, ThumbnailData /* thumbnail */> cache_entries;
 
   #define MAX_THUMB_COUNT 100
-  #define DEFAULT_THUMBNAIL_SIZE 64.0
+  #define DEFAULT_THUMBNAIL_SIZE 96.0
   int last_used_ids[MAX_THUMB_COUNT];
   int last_used_ptr = 0;
 
