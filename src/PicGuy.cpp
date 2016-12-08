@@ -383,6 +383,7 @@ static void icon_images_row_activated(GtkIconView* icon, GtkTreePath* path,
   Pixel* p;
 
   try {
+    photo->Open();
     p = photo->GetRawData();
   } catch (std::runtime_error& exc) {
     g_warning("Error while opening %s: %s", photo->GetName(), exc.what());

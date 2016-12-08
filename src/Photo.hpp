@@ -15,10 +15,14 @@
 
 class Photo {
 protected:
-  Pixel* _data = nullptr;
-  PixelAlpha* _thumbnail = nullptr;
-  std::string _name;
-  int _id;
+    /*  Default pixel data container. This class expects you put final
+        raw pixel content in this variable */
+    Pixel* _data = nullptr;
+
+    /* Thumbnail data container */
+    PixelAlpha* _thumbnail = nullptr;
+    std::string _name;
+    int _id;
 
 
 public:

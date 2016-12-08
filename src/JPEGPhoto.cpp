@@ -68,13 +68,16 @@ int JPEGPhoto::GetBitDepth(){return _bit_depth;}
 Pixel* JPEGPhoto::GetRawData(){
   /* If we don't have any pixel data, decompress the image.
      If we do, return what we already have.*/
-  if (_pixel)
-    return _pixel;
+  if (_data)
+    return _data;
+
+    /* For some reason, we need to reopen the file to get raw data again */
+    this->Open();
 
   jpeg_start_decompress(&cinfo);
 
 
-  _pixel = new Pixel[_height * _width];
+  _data = new Pixel[_height * _width];
   Pixel* pxPos = new Pixel[ _width];
 
   int offset = 0;
@@ -84,7 +87,7 @@ Pixel* JPEGPhoto::GetRawData(){
         cinfo.image_height); */
     int lines = jpeg_read_scanlines(&cinfo, (JSAMPARRAY)&pxPos, 1);
 
-    memcpy(_pixel + offset, pxPos, _width * (_bit_depth/8));
+    memcpy(_data + offset, pxPos, _width * (_bit_depth/8));
     offset += (cinfo.image_width);
 
 
@@ -92,7 +95,7 @@ Pixel* JPEGPhoto::GetRawData(){
   jpeg_finish_decompress(&cinfo);
 
   delete[] pxPos;
-  return _pixel;
+  return _data;
 
 }
 

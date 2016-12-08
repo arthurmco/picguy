@@ -42,9 +42,8 @@ int ThumbnailCache::Add(Photo* ph) {
 
   int thumb_width = int(width / divisor);
   int thumb_height = int(height / divisor);
-  int has_alpha = (ph->GetBitDepth() >= 32) ? TRUE : FALSE;
-  int stride = (has_alpha == TRUE) ?
-      128 * 4 : 128 * 3;
+  int has_alpha = TRUE;
+  int stride = 128*4;   // now thumbnails always have 32bpp
 
   GdkPixbuf* pb = gdk_pixbuf_new_from_data((guchar*) pixel,
     GDK_COLORSPACE_RGB, has_alpha, 8, width, height, stride, NULL, NULL);

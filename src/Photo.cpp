@@ -64,6 +64,11 @@ Pixel* Photo::GetThumbnail()
                             b += data32[dataY*w+dataX].B;
                             a += data32[dataY*w+dataX].A;
 
+                        } else {
+                            r += _data[dataY*w+dataX].R;
+                            g += _data[dataY*w+dataX].G;
+                            b += _data[dataY*w+dataX].B;
+                            a += 0xff;
                         }
                     }
                 }

@@ -31,7 +31,6 @@ private:
   struct jpeg_decompress_struct cinfo;
   struct jpeg_error_mgr jerr;
 
-  Pixel* _pixel = NULL;
   int _width, _height, _bit_depth;
 public:
   JPEGPhoto() : Photo() {};
@@ -42,7 +41,7 @@ public:
   /* Opens a file. Returns true on success, false on failure.
      You have to use the method SetName() to set the file name. */
   bool Open() override;
-  
+
   /* Close the file and free resources loaded by it*/
   void Close() override;
 
